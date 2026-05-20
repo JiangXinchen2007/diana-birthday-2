@@ -6,1351 +6,788 @@
 <title>For Diana — 2026.06.06</title>
 <style>
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════
    BASE
-   ════════════════════════════════════════ */
+   ══════════════════════════════════════ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
 html, body {
-  min-height: 100%;
-  background: #080808;
-  color: #e8e0d0;
+  height: 100%; background: #060606;
   font-family: 'Courier New', Courier, monospace;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+  overflow: hidden; -webkit-font-smoothing: antialiased;
+  user-select: none; -webkit-user-select: none;
 }
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════
    PORTAL
-   ════════════════════════════════════════ */
+   ══════════════════════════════════════ */
 #portal {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 24px 80px;
-  transition: opacity 0.5s ease;
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 20px;
+  transition: opacity .5s ease;
+  overflow-y: auto;
+}
+#portal.out { opacity:0; pointer-events:none; }
+
+.p-eyebrow {
+  font-size: 11px; letter-spacing: 6px; color: #3a3030;
+  margin-bottom: 12px;
+}
+.p-title {
+  font-size: clamp(30px,7vw,54px); font-weight: 300;
+  letter-spacing: 8px; color: #f0e8dc;
+  text-shadow: 0 0 50px rgba(255,220,160,.12);
+  margin-bottom: 6px;
+}
+.p-sub {
+  font-size: 11px; letter-spacing: 5px; color: #3a3030;
+  margin-bottom: 44px;
 }
 
-#portal.hidden { opacity: 0; pointer-events: none; }
-
-.portal-eyebrow {
-  font-size: 11px;
-  letter-spacing: 6px;
-  color: #4a4040;
-  margin-bottom: 14px;
-  text-transform: uppercase;
-}
-
-.portal-title {
-  font-size: clamp(32px, 6vw, 52px);
-  font-weight: 300;
-  letter-spacing: 6px;
-  color: #f0e8dc;
-  text-shadow: 0 0 40px rgba(255,220,160,0.15);
-  margin-bottom: 8px;
-}
-
-.portal-date {
-  font-size: 12px;
-  letter-spacing: 5px;
-  color: #4a4040;
-  margin-bottom: 56px;
-}
-
-/* Card grid */
-.portal-grid {
+.grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  width: 100%;
-  max-width: 900px;
+  grid-template-columns: repeat(3,1fr);
+  gap: 12px; width: 100%; max-width: 840px;
 }
 
-.portal-card {
-  border: 1px solid #2a2020;
-  padding: 28px 20px 22px;
-  cursor: pointer;
-  position: relative;
-  background: #0e0a0a;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-  overflow: hidden;
+.card {
+  border: 1px solid #221818;
+  padding: 24px 18px 18px;
+  background: #0c0808;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
   -webkit-tap-highlight-color: transparent;
 }
-
-.portal-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--accent);
-  opacity: 0.7;
-  transition: opacity 0.25s;
+.card::before {
+  content: ''; position: absolute;
+  top:0; left:0; right:0; height: 2px;
+  background: var(--ac); opacity: .6;
+  transition: opacity .22s, height .22s;
 }
-
-.portal-card:hover, .portal-card:active {
-  transform: translateY(-3px);
-  border-color: var(--accent);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 0.5px var(--accent);
+.card:hover, .card:active {
+  transform: translateY(-4px);
+  border-color: var(--ac);
+  box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 .5px var(--ac);
 }
-
-.portal-card:hover::before, .portal-card:active::before { opacity: 1; }
+.card:hover::before, .card:active::before { opacity:1; height:3px; }
 
 .card-kanji {
-  font-size: 52px;
+  font-size: 56px; font-family: serif;
+  color: var(--ac); opacity: .14;
+  position: absolute; right: 12px; top: 10px;
+  transition: opacity .22s; pointer-events: none;
   line-height: 1;
-  color: var(--accent);
-  opacity: 0.18;
-  position: absolute;
-  right: 14px;
-  top: 14px;
-  font-family: serif;
-  pointer-events: none;
-  transition: opacity 0.25s;
+}
+.card:hover .card-kanji, .card:active .card-kanji { opacity: .32; }
+
+.card-num {
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--ac); opacity: .7; margin-bottom: 10px;
+}
+.card-jp {
+  font-size: clamp(11px,2vw,14px); letter-spacing: 1px;
+  color: #c8c0b8; font-family: serif; margin-bottom: 4px;
+}
+.card-zh {
+  font-size: 11px; letter-spacing: 1px; color: #4a4040;
 }
 
-.portal-card:hover .card-kanji,
-.portal-card:active .card-kanji { opacity: 0.35; }
-
-.card-title {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: var(--accent);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-
-.card-name-jp {
-  font-size: 16px;
-  letter-spacing: 1px;
-  color: #d0c8bc;
-  margin-bottom: 4px;
-  font-family: serif;
-}
-
-.card-name-zh {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #5a5048;
-}
-
-/* ════════════════════════════════════════
-   WORLD BASE
-   ════════════════════════════════════════ */
-.world {
-  position: fixed;
-  inset: 0;
-  overflow-y: auto;
-  display: none;
-  opacity: 0;
-  transition: opacity 0.5s ease;
+/* ══════════════════════════════════════
+   STAGE (world backgrounds)
+   ══════════════════════════════════════ */
+.stage {
+  position: fixed; inset:0;
+  display: none; opacity: 0;
+  transition: opacity .6s ease;
   z-index: 10;
 }
-
-.world.visible {
-  display: block;
-}
-
-.world.active {
-  opacity: 1;
-}
-
-.back-btn {
-  position: fixed;
-  top: 18px;
-  left: 18px;
-  background: rgba(0,0,0,0.6);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.5);
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  padding: 8px 14px;
-  cursor: pointer;
-  z-index: 100;
-  backdrop-filter: blur(4px);
-  transition: color 0.2s, border-color 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.back-btn:hover, .back-btn:active {
-  color: rgba(255,255,255,0.9);
-  border-color: rgba(255,255,255,0.4);
-}
-
-.world-inner {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 32px 60px;
-}
-
-/* ════════════════════════════════════════
-   WORLD 1 — EVA
-   ════════════════════════════════════════ */
-#world-eva {
-  background: #070707;
-  font-family: 'Courier New', monospace;
-}
-
-#world-eva::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
-  pointer-events: none;
-  z-index: 1;
-}
-
-#world-eva::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cpolygon points='30,2 58,18 58,50 30,66 2,50 2,18' fill='none' stroke='%235c2a00' stroke-width='0.6'/%3E%3Cpolygon points='30,54 58,70 58,102 30,118 2,102 2,70' fill='none' stroke='%235c2a00' stroke-width='0.6'/%3E%3C/svg%3E");
-  opacity: 0.1;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.eva-terminal {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 680px;
-  color: #e07010;
-}
-
-.eva-header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.eva-wordmark {
-  font-size: 32px;
-  font-weight: 900;
-  letter-spacing: 14px;
-  color: #ff8c22;
-  text-shadow: 0 0 20px rgba(255,140,34,0.4);
-  margin-bottom: 6px;
-}
-
-.eva-subhead {
-  font-size: 10px;
-  letter-spacing: 5px;
-  color: #5c2a00;
-}
-
-.eva-sep { border: none; border-top: 1px solid #3a1800; margin: 16px 0; }
-
-.eva-line {
-  font-size: 12px;
-  line-height: 2.1;
-  letter-spacing: 1px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.eva-line.key {
-  font-size: 15px;
-  color: #f2e4cc;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(242,228,204,0.2);
-}
-
-.eva-line.dim { color: #5c2a00; }
-.eva-line.green { color: #18b845; }
-
-@keyframes evaFlicker {
-  0%,96%,100% { opacity: 1; }
-  97% { opacity: 0.85; }
-}
-#world-eva { animation: evaFlicker 12s infinite; }
-
-/* ════════════════════════════════════════
-   WORLD 2 — CHAINSAW MAN
-   ════════════════════════════════════════ */
-#world-chainsaw {
-  background: #0d0b0b;
-}
-
-.csm-bg-noise {
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
-}
-
-.csm-panels {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 6px;
-  width: 100%;
-  max-width: 640px;
-  border: 3px solid #f0f0f0;
-}
-
-.csm-panel {
-  background: #f0f0f0;
-  border: 2px solid #111;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.csm-panel.dark {
-  background: #111;
-  color: #f0f0f0;
-}
-
-.csm-panel.full-width {
-  grid-column: 1 / -1;
-}
-
-.csm-panel-num {
-  font-size: 9px;
-  color: rgba(0,0,0,0.2);
-  position: absolute;
-  top: 6px;
-  left: 8px;
-  font-weight: bold;
-}
-
-.csm-panel.dark .csm-panel-num { color: rgba(255,255,255,0.15); }
-
-.csm-big-text {
-  font-size: clamp(22px, 5vw, 38px);
-  font-weight: 900;
-  font-family: serif;
-  color: #111;
-  line-height: 1.2;
-}
-
-.csm-panel.dark .csm-big-text { color: #f0f0f0; }
-
-.csm-red-text {
-  font-size: clamp(22px, 5vw, 38px);
-  font-weight: 900;
-  font-family: serif;
-  color: #cc1a1a;
-  line-height: 1.2;
-}
-
-.csm-small {
-  font-size: 11px;
-  color: #555;
-  line-height: 1.8;
-  margin-top: 8px;
-}
-
-.csm-panel.dark .csm-small { color: #aaa; }
-
-.csm-halftone {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
-  background-size: 6px 6px;
-  pointer-events: none;
-}
-
-.csm-slash {
-  position: absolute;
-  top: 0; right: 0;
-  width: 0;
-  height: 0;
-  border-top: 60px solid #cc1a1a;
-  border-left: 60px solid transparent;
-  opacity: 0.7;
-}
-
-.csm-caption {
-  margin-top: 10px;
-  text-align: right;
-  font-size: 11px;
-  color: #5a5048;
-  letter-spacing: 2px;
-  position: relative;
-  z-index: 2;
-}
-
-.csm-reze-note {
-  margin-top: 6px;
-  text-align: center;
-  font-size: 10px;
-  color: #6a4040;
-  letter-spacing: 1px;
-  font-style: italic;
-  position: relative;
-  z-index: 2;
-}
-
-/* ════════════════════════════════════════
-   WORLD 3 — ATTACK ON TITAN
-   ════════════════════════════════════════ */
-#world-aot {
-  background: #0f0e0c;
-}
-
-.aot-doc {
-  width: 100%;
-  max-width: 620px;
-  border: 1px solid #3a3420;
-  background: #0d0c0a;
-  position: relative;
-  z-index: 2;
-}
-
-.aot-header-bar {
-  background: #1e1c14;
-  border-bottom: 2px solid #3a3420;
-  padding: 16px 24px;
-  text-align: center;
-}
-
-.aot-title-jp {
-  font-size: 13px;
-  letter-spacing: 5px;
-  color: #8a7a4a;
-  margin-bottom: 4px;
-  font-family: serif;
-}
-
-.aot-title-sub {
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: #4a4228;
-}
-
-.aot-body {
-  padding: 24px 28px;
-}
-
-.aot-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  border-bottom: 1px solid #2a2416;
-  padding-bottom: 10px;
-}
-
-.aot-label {
-  color: #6a5a32;
-  letter-spacing: 2px;
-  min-width: 80px;
-  font-size: 11px;
-}
-
-.aot-value {
-  color: #c0a860;
-  letter-spacing: 1px;
-}
-
-.aot-message {
-  margin: 20px 0;
-  padding: 20px;
-  border: 1px solid #3a3420;
-  background: #0a0904;
-}
-
-.aot-pledge {
-  font-size: 14px;
-  letter-spacing: 3px;
-  color: #8a7a4a;
-  margin-bottom: 14px;
-  font-family: serif;
-  text-align: center;
-}
-
-.aot-note {
-  font-size: 11px;
-  color: #7a6a42;
-  line-height: 2.2;
-  letter-spacing: 1px;
-}
-
-.aot-msg-main {
-  font-size: 16px;
-  color: #d0b870;
-  letter-spacing: 3px;
-  margin: 16px 0 8px;
-}
-
-.aot-msg-sub {
-  font-size: 11px;
-  color: #6a5a32;
-  line-height: 2;
-  letter-spacing: 1px;
-}
-
-.aot-footer {
-  background: #1e1c14;
-  border-top: 2px solid #3a3420;
-  padding: 14px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.aot-wings {
-  font-size: 22px;
-  color: #8a7a4a;
-  letter-spacing: 4px;
-}
-
-.aot-sig {
-  font-size: 11px;
-  color: #6a5a32;
-  letter-spacing: 2px;
-  text-align: right;
-}
-
-/* ════════════════════════════════════════
-   WORLD 4 — KIMETSU NO YAIBA
-   ════════════════════════════════════════ */
-#world-kimetsu {
-  background: #080810;
-}
-
-.kim-bg {
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M0,40 Q20,20 40,40 Q60,60 80,40' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3Cpath d='M0,60 Q20,40 40,60 Q60,80 80,60' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3Cpath d='M0,20 Q20,0 40,20 Q60,40 80,20' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3C/svg%3E");
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.kim-scroll {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 520px;
-  border: 1px solid #1a2a4a;
-  background: #080812;
-  text-align: center;
-  overflow: hidden;
-}
-
-.kim-scroll::before, .kim-scroll::after {
-  content: '';
-  display: block;
-  height: 12px;
-  background: repeating-linear-gradient(90deg, #0a1a3a 0, #0a1a3a 2px, transparent 2px, transparent 8px);
-}
-
-.kim-scroll-inner {
-  padding: 32px 32px 24px;
-}
-
-.kim-header {
-  font-size: 11px;
-  letter-spacing: 6px;
-  color: #2a4a8a;
-  margin-bottom: 8px;
-}
-
-.kim-title {
-  font-size: 22px;
-  letter-spacing: 8px;
-  color: #4a80cc;
-  text-shadow: 0 0 20px rgba(74,128,204,0.3);
-  margin-bottom: 6px;
-  font-family: serif;
-}
-
-.kim-subtitle {
-  font-size: 13px;
-  letter-spacing: 4px;
-  color: #1a3060;
-  margin-bottom: 24px;
-  font-family: serif;
-}
-
-.kim-div {
-  border: none;
-  border-top: 1px solid #1a2a4a;
-  margin: 20px 0;
-}
-
-.kim-to {
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: #3a5a8a;
-  margin-bottom: 20px;
-}
-
-.kim-msg-main {
-  font-size: 20px;
-  letter-spacing: 6px;
-  color: #f0e8d8;
-  text-shadow: 0 0 30px rgba(240,232,216,0.2);
-  margin-bottom: 20px;
-  font-family: serif;
-}
-
-.kim-msg-poem {
-  font-size: 12px;
-  color: #4a6a9a;
-  line-height: 2.4;
-  letter-spacing: 3px;
-  font-family: serif;
-  margin-bottom: 20px;
-}
-
-.kim-breath {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: #2a4070;
-  margin-bottom: 20px;
-}
-
-.kim-sig {
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: #3a5a7a;
-}
-
-/* ════════════════════════════════════════
-   WORLD 5 — DEATH NOTE
-   ════════════════════════════════════════ */
-#world-deathnote {
-  background: #f5f0e4;
-  color: #1a1a1a;
-}
-
-.dn-back-btn {
-  color: rgba(30,20,0,0.4) !important;
-  border-color: rgba(30,20,0,0.2) !important;
-  background: rgba(245,240,228,0.8) !important;
-}
-
-.dn-back-btn:hover, .dn-back-btn:active {
-  color: rgba(30,20,0,0.8) !important;
-  border-color: rgba(30,20,0,0.4) !important;
-}
-
-.dn-notebook {
-  width: 100%;
-  max-width: 580px;
-  background: #f8f4e4;
-  box-shadow: 0 4px 40px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(0,0,0,0.05);
-  position: relative;
-  z-index: 2;
-  font-family: 'Courier New', monospace;
-}
-
-.dn-notebook::before {
-  content: '';
-  position: absolute;
-  left: 60px;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(200,80,80,0.3);
-}
-
-.dn-cover {
-  background: #1a1a1a;
-  padding: 20px 28px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.dn-cover-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #f0e8d0;
-  letter-spacing: 3px;
-  font-family: serif;
-}
-
-.dn-cover-sub {
-  font-size: 9px;
-  color: #6a5a40;
-  letter-spacing: 2px;
-  margin-top: 4px;
-}
-
-.dn-spiral {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.dn-spiral span {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #555;
-  border-radius: 50%;
-  display: block;
-}
-
-.dn-lines {
-  padding: 16px 28px 16px 72px;
-}
-
-.dn-rule {
-  border: none;
-  border-bottom: 1px solid rgba(200,80,80,0.25);
-  padding-bottom: 14px;
-  margin-bottom: 0;
-  font-size: 13px;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  min-height: 38px;
-  display: flex;
-  align-items: flex-end;
-  position: relative;
-}
-
-.dn-strikethrough {
-  text-decoration: line-through;
-  color: #8a7050;
-  font-size: 11px;
-}
-
-.dn-written {
-  color: #1a1a1a;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.dn-written.cursive {
-  font-style: italic;
-  font-family: Georgia, serif;
-  color: #2a2010;
-}
-
-.dn-signed {
-  font-size: 11px;
-  color: #5a4030;
-  letter-spacing: 1px;
-}
-
-.dn-redline {
-  border: none;
-  border-bottom: 1px solid rgba(200,80,80,0.2);
-  min-height: 38px;
-}
-
-.dn-ps {
-  font-size: 10px;
-  color: #7a6040;
-  letter-spacing: 0.5px;
-  font-style: italic;
-}
-
-.dn-l-note {
-  margin-top: 4px;
-  font-size: 9px;
-  color: rgba(0,0,0,0.25);
-  letter-spacing: 0.3px;
-}
-
-/* ════════════════════════════════════════
-   WORLD 6 — APOTHECARY DIARIES
-   ════════════════════════════════════════ */
-#world-apothecary {
-  background: #080404;
-}
-
-.apo-bg {
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='20' r='12' fill='none' stroke='%232a0a0a' stroke-width='1'/%3E%3Ccircle cx='50' cy='20' r='8' fill='none' stroke='%232a0a0a' stroke-width='0.7'/%3E%3Ccircle cx='80' cy='70' r='10' fill='none' stroke='%232a0a0a' stroke-width='1'/%3E%3Ccircle cx='20' cy='70' r='10' fill='none' stroke='%232a0a0a' stroke-width='1'/%3E%3Cpath d='M38,20 Q50,35 62,20' fill='none' stroke='%232a0a0a' stroke-width='0.8'/%3E%3C/svg%3E");
-  opacity: 0.6;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.apo-scroll {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 580px;
-  border: 1px solid #3a1010;
-  background: #0e0606;
-}
-
-.apo-top-border {
-  height: 8px;
-  background: repeating-linear-gradient(90deg, #3a1010 0, #3a1010 4px, #c03030 4px, #c03030 8px, #3a1010 8px, #3a1010 12px, #c9a227 12px, #c9a227 16px);
-  opacity: 0.6;
-}
-
-.apo-inner {
-  padding: 28px 32px 32px;
-}
-
-.apo-header {
-  text-align: center;
-  margin-bottom: 24px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #3a1010;
-}
-
-.apo-era {
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: #8a3020;
-  margin-bottom: 8px;
-  font-family: serif;
-}
-
-.apo-title {
-  font-size: 13px;
-  letter-spacing: 6px;
-  color: #c9a227;
-  font-family: serif;
-  text-shadow: 0 0 14px rgba(201,162,39,0.3);
-}
-
-.apo-dialogue {
-  margin-bottom: 18px;
-}
-
-.apo-speaker {
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: #c9a227;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.apo-speaker::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(201,162,39,0.2);
-}
-
-.apo-text {
-  font-size: 13px;
-  color: #c0a88a;
-  line-height: 2.2;
-  letter-spacing: 1px;
-  padding-left: 16px;
-  border-left: 2px solid rgba(192,48,48,0.3);
-  font-family: serif;
-}
-
-.apo-text.maomao {
-  font-size: 12px;
-  color: #8a7a60;
-  font-style: italic;
-}
-
-.apo-letter {
-  margin-top: 22px;
-  padding: 20px 24px;
-  border: 1px solid rgba(201,162,39,0.25);
-  background: rgba(201,162,39,0.03);
-}
-
-.apo-letter-header {
-  font-size: 10px;
-  letter-spacing: 4px;
-  color: #8a3020;
-  margin-bottom: 14px;
-  text-align: center;
-}
-
-.apo-letter-body {
-  font-size: 14px;
-  color: #c0a88a;
-  line-height: 2.4;
-  letter-spacing: 2px;
-  font-family: serif;
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.apo-seal {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.apo-seal-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2px solid #c03030;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: serif;
-  font-size: 16px;
-  color: #c03030;
-  position: relative;
-}
-
-.apo-seal-circle::before {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  border: 1px solid rgba(192,48,48,0.4);
-}
-
-.apo-sig-text {
-  text-align: right;
-  font-size: 11px;
-  color: #6a5040;
-  letter-spacing: 3px;
-}
-
-/* ════════════════════════════════════════
+.stage.on { display:block; }
+.stage.active { opacity:1; }
+
+/* EVA stage */
+#st-eva {
+  background: radial-gradient(ellipse at 50% 60%, #110800 0%, #060608 70%);
+}
+#st-eva::before {
+  content:''; position:absolute; inset:0;
+  background: repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,0,0,.16) 2px,rgba(0,0,0,.16) 4px);
+  pointer-events:none; z-index:1;
+}
+#st-eva::after {
+  content:''; position:absolute; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cpolygon points='30,2 58,18 58,50 30,66 2,50 2,18' fill='none' stroke='%23301000' stroke-width='.7'/%3E%3Cpolygon points='30,54 58,70 58,102 30,118 2,102 2,70' fill='none' stroke='%23301000' stroke-width='.7'/%3E%3C/svg%3E");
+  opacity:.18; pointer-events:none; z-index:0;
+}
+.eva-glow {
+  position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:60vw; height:30vh;
+  background: radial-gradient(ellipse, rgba(200,80,0,.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+/* Chainsaw Man stage */
+#st-chainsaw {
+  background: radial-gradient(ellipse at 50% 80%, #1a0303 0%, #080404 70%);
+}
+.csm-dots {
+  position:absolute; inset:0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 8px 8px; pointer-events:none;
+}
+.csm-glow {
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background: linear-gradient(90deg, transparent, #cc1a1a 30%, #cc1a1a 70%, transparent);
+  opacity:.4;
+}
+.csm-glow2 {
+  position:absolute; bottom:140px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(204,26,26,.3) 50%, transparent);
+}
+
+/* AoT stage */
+#st-aot {
+  background: radial-gradient(ellipse at 50% 40%, #0e0d09 0%, #08070404 100%);
+}
+.aot-lines {
+  position:absolute; inset:0;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(80,70,30,.03) 40px, rgba(80,70,30,.03) 41px);
+  pointer-events:none;
+}
+.aot-wings-bg {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-size: min(40vw,280px); color: rgba(100,90,40,.04);
+  pointer-events:none; font-family:serif; white-space:nowrap;
+  line-height:1;
+}
+
+/* Kimetsu stage */
+#st-kimetsu {
+  background: radial-gradient(ellipse at 50% 30%, #04060f 0%, #020208 80%);
+}
+.kim-waves {
+  position:absolute; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0,20 Q30,5 60,20 Q90,35 120,20' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 120px 40px; opacity:.5; pointer-events:none;
+}
+.kim-stars {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    radial-gradient(circle, rgba(100,140,220,.25) 1px, transparent 1px),
+    radial-gradient(circle, rgba(100,140,220,.15) 1px, transparent 1px);
+  background-size: 80px 80px, 120px 120px;
+  background-position: 0 0, 40px 40px;
+}
+
+/* Death Note stage */
+#st-deathnote {
+  background: #0a0806;
+}
+.dn-light {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:50vw; height:60vh;
+  background: radial-gradient(ellipse at 50% 0%, rgba(200,160,40,.04) 0%, transparent 70%);
+  pointer-events:none;
+}
+.dn-lines-bg {
+  position:absolute; inset:0;
+  background-image: repeating-linear-gradient(0deg, transparent 0, transparent 34px, rgba(160,80,80,.05) 34px, rgba(160,80,80,.05) 35px);
+  pointer-events:none;
+}
+
+/* Apothecary stage */
+#st-apothecary {
+  background: radial-gradient(ellipse at 50% 50%, #0e0404 0%, #060202 80%);
+}
+.apo-clouds {
+  position:absolute; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='30' r='15' fill='none' stroke='%23200505' stroke-width='1'/%3E%3Ccircle cx='50' cy='30' r='10' fill='none' stroke='%23200505' stroke-width='.6'/%3E%3Ccircle cx='20' cy='75' r='12' fill='none' stroke='%23200505' stroke-width='.8'/%3E%3Ccircle cx='80' cy='75' r='12' fill='none' stroke='%23200505' stroke-width='.8'/%3E%3C/svg%3E");
+  opacity:.6; pointer-events:none;
+}
+.apo-glow {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(180,40,20,.04) 0%, transparent 65%);
+  pointer-events:none;
+}
+
+/* ══════════════════════════════════════
+   VN UI
+   ══════════════════════════════════════ */
+#vn-ui {
+  position:fixed; inset:0; z-index:20;
+  display:none; flex-direction:column;
+  pointer-events:none;
+}
+#vn-ui.on { display:flex; }
+
+#back-btn {
+  position:absolute; top:16px; left:16px;
+  background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.4); font-family:'Courier New',monospace;
+  font-size:11px; letter-spacing:2px; padding:7px 14px;
+  cursor:pointer; pointer-events:all;
+  backdrop-filter:blur(4px);
+  transition:color .2s, border-color .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+#back-btn:hover, #back-btn:active {
+  color:rgba(255,255,255,.85); border-color:rgba(255,255,255,.35);
+}
+
+/* Character chips */
+#char-row {
+  position:absolute;
+  bottom: 162px; left:0; right:0;
+  display:flex; justify-content:center; gap:14px;
+  padding:0 20px;
+}
+.chip {
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  transition: transform .25s, opacity .25s;
+  opacity: .3;
+}
+.chip.lit { opacity:1; transform:translateY(-4px); }
+.chip-circle {
+  width:46px; height:46px; border-radius:50%;
+  border:2px solid var(--cc); display:flex;
+  align-items:center; justify-content:center;
+  font-size:13px; font-weight:bold; color:var(--cc);
+  background:rgba(0,0,0,.6);
+  box-shadow:none; transition:box-shadow .25s;
+}
+.chip.lit .chip-circle {
+  box-shadow: 0 0 14px var(--cc);
+}
+.chip-label {
+  font-size:8px; letter-spacing:1.5px;
+  color:rgba(255,255,255,.3);
+  transition:color .25s;
+  white-space:nowrap;
+}
+.chip.lit .chip-label { color:var(--cc); }
+
+/* Dialogue box */
+#dialogue-box {
+  position:absolute; bottom:0; left:0; right:0;
+  min-height:148px;
+  background:rgba(4,2,2,.88);
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:16px 24px 20px;
+  cursor:pointer; pointer-events:all;
+  backdrop-filter:blur(6px);
+}
+#char-name-display {
+  font-size:12px; letter-spacing:3px;
+  margin-bottom:8px; font-weight:bold;
+  min-height:16px;
+  transition:color .3s;
+}
+#dialogue-text-display {
+  font-size: clamp(13px,3.5vw,15px);
+  line-height:1.9; letter-spacing:.5px;
+  color:#d8d0c4; min-height:54px;
+}
+#dialogue-text-display .inner-thought {
+  color:#888; font-style:italic; font-size:.9em;
+}
+#continue-hint {
+  position:absolute; bottom:14px; right:18px;
+  font-size:10px; color:rgba(255,255,255,.25);
+  opacity:0; transition:opacity .4s;
+}
+#continue-hint.show { opacity:1; }
+
+@keyframes hintPulse { 0%,100%{opacity:.2} 50%{opacity:.6} }
+#continue-hint.show { animation:hintPulse 1.4s infinite; }
+
+/* ══════════════════════════════════════
+   BIRTHDAY CARD
+   ══════════════════════════════════════ */
+#bday-card {
+  position:fixed; inset:0; z-index:30;
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:40px 24px;
+  background:rgba(4,2,2,.0);
+  transition:background .8s ease;
+  cursor:pointer;
+}
+#bday-card.on { display:flex; }
+#bday-card.lit { background:rgba(4,2,2,.92); }
+
+.bcard-inner {
+  text-align:center; opacity:0;
+  transition:opacity 1.2s ease; max-width:560px; width:100%;
+}
+#bday-card.lit .bcard-inner { opacity:1; }
+
+.bcard-world {
+  font-size:10px; letter-spacing:5px;
+  color:var(--wac); margin-bottom:20px; opacity:.6;
+}
+.bcard-sep {
+  border:none; border-top:1px solid var(--wac);
+  margin:18px 0; opacity:.2;
+}
+.bcard-msg1 {
+  font-size:clamp(20px,5vw,28px); letter-spacing:4px;
+  color:#f0e8dc; margin-bottom:12px; line-height:1.4;
+  text-shadow:0 0 40px rgba(255,220,160,.2);
+}
+.bcard-msg2 {
+  font-size:clamp(15px,4vw,19px); letter-spacing:3px;
+  color:var(--wac); margin-bottom:28px;
+  text-shadow:0 0 24px var(--wac);
+}
+.bcard-sig {
+  font-size:12px; letter-spacing:5px; color:rgba(255,255,255,.25);
+  margin-bottom:8px;
+}
+.bcard-date { font-size:10px; letter-spacing:3px; color:rgba(255,255,255,.15); }
+.bcard-return {
+  margin-top:32px; font-size:11px; letter-spacing:3px;
+  color:rgba(255,255,255,.2); cursor:pointer;
+  border:1px solid rgba(255,255,255,.1);
+  padding:8px 20px; display:inline-block;
+  transition:color .2s, border-color .2s;
+  pointer-events:all;
+}
+.bcard-return:hover, .bcard-return:active {
+  color:rgba(255,255,255,.6); border-color:rgba(255,255,255,.3);
+}
+
+/* ══════════════════════════════════════
    RESPONSIVE
-   ════════════════════════════════════════ */
-@media (max-width: 840px) {
-  .portal-grid { grid-template-columns: repeat(2, 1fr); }
+   ══════════════════════════════════════ */
+@media(max-width:720px) {
+  .grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .p-title { letter-spacing:5px; }
+  .p-sub { margin-bottom:30px; }
+  .card { padding:18px 14px 14px; }
+  .card-kanji { font-size:42px; }
+  #char-row { gap:8px; bottom:158px; }
+  .chip-circle { width:38px; height:38px; font-size:11px; }
+  #dialogue-box { padding:14px 18px 18px; }
 }
 
-@media (max-width: 520px) {
-  #portal { padding: 44px 16px 60px; }
-  .portal-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .portal-card { padding: 20px 14px 16px; }
-  .card-kanji { font-size: 38px; }
-  .card-name-jp { font-size: 13px; }
-  .world-inner { padding: 70px 18px 40px; }
-  .csm-panels { gap: 4px; }
-  .aot-doc, .kim-scroll, .dn-notebook, .apo-scroll { max-width: 100%; }
-  .aot-row { flex-direction: column; gap: 2px; }
-  .aot-label { min-width: unset; }
-  .dn-lines { padding-left: 52px; }
-  .dn-notebook::before { left: 44px; }
-  .apo-inner { padding: 20px 18px 24px; }
-  .kim-scroll-inner { padding: 24px 18px 18px; }
+@media(max-width:400px) {
+  .grid { gap:8px; }
+  .card-jp { font-size:11px; }
+  #char-row { bottom:152px; }
+  .chip-circle { width:34px; height:34px; font-size:10px; }
+  .chip-label { display:none; }
 }
 
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     PORTAL
-     ══════════════════════════════════════ -->
+<!-- ══════════ PORTAL ══════════ -->
 <div id="portal">
-  <p class="portal-eyebrow">A birthday gift</p>
-  <h1 class="portal-title">For Diana</h1>
-  <p class="portal-date">2 0 2 6 · 0 6 · 0 6</p>
-
-  <div class="portal-grid">
-
-    <div class="portal-card" style="--accent:#e07010" onclick="enterWorld('eva')">
+  <p class="p-eyebrow">2 0 2 6 · 0 6 · 0 6</p>
+  <h1 class="p-title">For Diana</h1>
+  <p class="p-sub">choose your world</p>
+  <div class="grid">
+    <div class="card" style="--ac:#e07010" onclick="enter('eva')">
       <div class="card-kanji">神</div>
-      <div class="card-title">01</div>
-      <div class="card-name-jp">新世紀エヴァンゲリオン</div>
-      <div class="card-name-zh">新世纪福音战士</div>
+      <div class="card-num">01</div>
+      <div class="card-jp">新世紀エヴァンゲリオン</div>
+      <div class="card-zh">新世纪福音战士</div>
     </div>
-
-    <div class="portal-card" style="--accent:#cc2020" onclick="enterWorld('chainsaw')">
+    <div class="card" style="--ac:#cc2020" onclick="enter('chainsaw')">
       <div class="card-kanji">電</div>
-      <div class="card-title">02</div>
-      <div class="card-name-jp">チェンソーマン</div>
-      <div class="card-name-zh">电锯人</div>
+      <div class="card-num">02</div>
+      <div class="card-jp">チェンソーマン</div>
+      <div class="card-zh">电锯人</div>
     </div>
-
-    <div class="portal-card" style="--accent:#6a8a4a" onclick="enterWorld('aot')">
+    <div class="card" style="--ac:#7a9a50" onclick="enter('aot')">
       <div class="card-kanji">翼</div>
-      <div class="card-title">03</div>
-      <div class="card-name-jp">進撃の巨人</div>
-      <div class="card-name-zh">进击的巨人</div>
+      <div class="card-num">03</div>
+      <div class="card-jp">進撃の巨人</div>
+      <div class="card-zh">进击的巨人</div>
     </div>
-
-    <div class="portal-card" style="--accent:#3a7aaa" onclick="enterWorld('kimetsu')">
+    <div class="card" style="--ac:#3a80c0" onclick="enter('kimetsu')">
       <div class="card-kanji">水</div>
-      <div class="card-title">04</div>
-      <div class="card-name-jp">鬼滅の刃</div>
-      <div class="card-name-zh">鬼灭之刃</div>
+      <div class="card-num">04</div>
+      <div class="card-jp">鬼滅の刃</div>
+      <div class="card-zh">鬼灭之刃</div>
     </div>
-
-    <div class="portal-card" style="--accent:#c0a040" onclick="enterWorld('deathnote')">
+    <div class="card" style="--ac:#b8982a" onclick="enter('deathnote')">
       <div class="card-kanji">死</div>
-      <div class="card-title">05</div>
-      <div class="card-name-jp">デスノート</div>
-      <div class="card-name-zh">死亡笔记</div>
+      <div class="card-num">05</div>
+      <div class="card-jp">デスノート</div>
+      <div class="card-zh">死亡笔记</div>
     </div>
-
-    <div class="portal-card" style="--accent:#c03030" onclick="enterWorld('apothecary')">
+    <div class="card" style="--ac:#c03030" onclick="enter('apothecary')">
       <div class="card-kanji">薬</div>
-      <div class="card-title">06</div>
-      <div class="card-name-jp">薬屋のひとりごと</div>
-      <div class="card-name-zh">药屋少女的呢喃</div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     WORLD 1 — EVA
-     ══════════════════════════════════════ -->
-<div id="world-eva" class="world">
-  <button class="back-btn" onclick="exitWorld()">← BACK</button>
-  <div class="world-inner">
-    <div class="eva-terminal">
-      <div class="eva-header">
-        <div class="eva-wordmark">N E R V</div>
-        <div class="eva-subhead">神経　／　MAGI SUPERCOMPUTER SYSTEM</div>
-      </div>
-      <hr class="eva-sep">
-      <div id="eva-lines"></div>
+      <div class="card-num">06</div>
+      <div class="card-jp">薬屋のひとりごと</div>
+      <div class="card-zh">药屋少女的呢喃</div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     WORLD 2 — CHAINSAW MAN
-     ══════════════════════════════════════ -->
-<div id="world-chainsaw" class="world">
-  <button class="back-btn" onclick="exitWorld()">← BACK</button>
-  <div class="csm-bg-noise"></div>
-  <div class="world-inner">
-    <div class="csm-panels">
+<!-- ══════════ STAGES ══════════ -->
+<div id="st-eva" class="stage">
+  <div class="eva-glow"></div>
+</div>
 
-      <div class="csm-panel dark">
-        <div class="csm-halftone"></div>
-        <div class="csm-panel-num">1</div>
-        <div class="csm-big-text" style="font-size:clamp(28px,8vw,52px);letter-spacing:2px;color:#cc1a1a;">チェンソーマン</div>
-        <div class="csm-small" style="margin-top:12px;color:#555">蕾塞篇&emsp;Bomb Girl Arc</div>
-      </div>
+<div id="st-chainsaw" class="stage">
+  <div class="csm-dots"></div>
+  <div class="csm-glow"></div>
+  <div class="csm-glow2"></div>
+</div>
 
-      <div class="csm-panel">
-        <div class="csm-halftone"></div>
-        <div class="csm-slash"></div>
-        <div class="csm-panel-num">2</div>
-        <div class="csm-big-text">Diana——</div>
-        <div class="csm-small" style="color:#333;margin-top:10px;">生日快乐。</div>
-      </div>
+<div id="st-aot" class="stage">
+  <div class="aot-lines"></div>
+  <div class="aot-wings-bg">❧</div>
+</div>
 
-      <div class="csm-panel full-width" style="background:#111;">
-        <div class="csm-halftone"></div>
-        <div class="csm-panel-num" style="color:rgba(255,255,255,0.15)">3</div>
-        <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
-          <div>
-            <div class="csm-big-text" style="color:#f0f0f0;font-size:clamp(16px,4vw,24px);letter-spacing:1px;line-height:1.6;">
-              「我不太会说好听的话——」
-            </div>
-            <div class="csm-big-text" style="color:#cc1a1a;font-size:clamp(22px,5vw,36px);margin-top:12px;">
-              我很想你。
-            </div>
-          </div>
-        </div>
-      </div>
+<div id="st-kimetsu" class="stage">
+  <div class="kim-waves"></div>
+  <div class="kim-stars"></div>
+</div>
 
-    </div>
-    <div class="csm-caption">— Jiang&emsp;2026.06.06</div>
-    <div class="csm-reze-note">「あなたは私のために泣いてくれた。」&emsp;— Reze</div>
+<div id="st-deathnote" class="stage">
+  <div class="dn-lines-bg"></div>
+  <div class="dn-light"></div>
+</div>
+
+<div id="st-apothecary" class="stage">
+  <div class="apo-clouds"></div>
+  <div class="apo-glow"></div>
+</div>
+
+<!-- ══════════ VN UI ══════════ -->
+<div id="vn-ui">
+  <button id="back-btn" onclick="exitWorld()">← BACK</button>
+  <div id="char-row"></div>
+  <div id="dialogue-box" onclick="advance()">
+    <div id="char-name-display"></div>
+    <div id="dialogue-text-display"></div>
+    <div id="continue-hint">▶ tap</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     WORLD 3 — ATTACK ON TITAN
-     ══════════════════════════════════════ -->
-<div id="world-aot" class="world">
-  <button class="back-btn" onclick="exitWorld()">← BACK</button>
-  <div class="world-inner">
-    <div class="aot-doc">
-
-      <div class="aot-header-bar">
-        <div class="aot-title-jp">第一〇四期訓練兵団　特別調査報告書</div>
-        <div class="aot-title-sub">SURVEY CORPS — CLASSIFIED DOCUMENT</div>
-      </div>
-
-      <div class="aot-body">
-        <div class="aot-row">
-          <span class="aot-label">対 象 者</span>
-          <span class="aot-value">DIANA</span>
-        </div>
-        <div class="aot-row">
-          <span class="aot-label">生 誕 日</span>
-          <span class="aot-value">2026.06.06 &emsp;/&emsp; 19歳</span>
-        </div>
-        <div class="aot-row">
-          <span class="aot-label">任 　 務</span>
-          <span class="aot-value" style="color:#8a7a4a;font-style:italic">[BIRTHDAY PROTOCOL]</span>
-        </div>
-
-        <div class="aot-message">
-          <div class="aot-pledge">「 心臓を捧げよ。」</div>
-          <div class="aot-note">これは命令ではない。<br>ただ、あなたのことを——</div>
-          <div class="aot-msg-main">生日快乐，Diana。</div>
-          <div class="aot-msg-sub">
-            忘れたことは、一度もない。<br>
-            I miss you.
-          </div>
-        </div>
-      </div>
-
-      <div class="aot-footer">
-        <div class="aot-wings">❧ ✦ ❦</div>
-        <div class="aot-sig">
-          調査兵団<br>
-          JIANG &emsp; 2026.06.06
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     WORLD 4 — KIMETSU NO YAIBA
-     ══════════════════════════════════════ -->
-<div id="world-kimetsu" class="world">
-  <button class="back-btn" onclick="exitWorld()">← BACK</button>
-  <div class="kim-bg"></div>
-  <div class="world-inner">
-    <div class="kim-scroll">
-      <div class="kim-scroll-inner">
-        <div class="kim-header">水 の 呼 吸</div>
-        <div class="kim-title">特 別 の 型</div>
-        <div class="kim-subtitle">誕 生 祝 い の 剣</div>
-
-        <hr class="kim-div">
-
-        <div class="kim-to">Diana &emsp; へ</div>
-
-        <div class="kim-msg-main">生日快乐。</div>
-
-        <div class="kim-msg-poem">
-          願わくば、あなたの日々が<br>
-          水面のように、<br>
-          穏やかで、澄んでいますように。<br><br>
-          愿岁月待你温柔。
-        </div>
-
-        <div class="kim-breath">全集中・常中</div>
-
-        <hr class="kim-div">
-
-        <div class="kim-sig">Jiang &emsp;／&emsp; 2026.06.06</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     WORLD 5 — DEATH NOTE
-     ══════════════════════════════════════ -->
-<div id="world-deathnote" class="world">
-  <button class="back-btn dn-back-btn" onclick="exitWorld()">← BACK</button>
-  <div class="world-inner">
-    <div class="dn-notebook">
-
-      <div class="dn-cover">
-        <div class="dn-spiral">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <div>
-          <div class="dn-cover-title">DEATH NOTE</div>
-          <div class="dn-cover-sub">THE NOTEBOOK OF DEATH</div>
-        </div>
-      </div>
-
-      <div class="dn-lines">
-
-        <div class="dn-rule">
-          <span class="dn-written" style="font-size:10px;color:#9a8060;font-style:italic">
-            The human whose name is written in this note —
-          </span>
-        </div>
-
-        <div class="dn-rule">
-          <span class="dn-strikethrough">Diana &nbsp; shall die on 2026.06.06</span>
-        </div>
-
-        <div class="dn-redline"></div>
-
-        <div class="dn-rule" style="min-height:48px;">
-          <span class="dn-written cursive">
-            Diana shall, on this day 2026.06.06,<br>
-            receive the most sincere birthday wishes.
-          </span>
-        </div>
-
-        <div class="dn-rule">
-          <span class="dn-written cursive">Happy Birthday.</span>
-        </div>
-
-        <div class="dn-rule">
-          <span class="dn-written cursive">I miss you.</span>
-        </div>
-
-        <div class="dn-redline"></div>
-
-        <div class="dn-rule">
-          <span class="dn-signed">Written by : Jiang &emsp; Date : 2026.06.06</span>
-        </div>
-
-        <div class="dn-rule" style="border:none;padding-top:6px;">
-          <div>
-            <div class="dn-ps">P.S. &nbsp; I hope you're doing well.</div>
-            <div class="dn-l-note">— L would have already deduced that I miss you.</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     WORLD 6 — APOTHECARY DIARIES
-     ══════════════════════════════════════ -->
-<div id="world-apothecary" class="world">
-  <button class="back-btn" onclick="exitWorld()">← BACK</button>
-  <div class="apo-bg"></div>
-  <div class="world-inner">
-    <div class="apo-scroll">
-
-      <div class="apo-top-border"></div>
-
-      <div class="apo-inner">
-
-        <div class="apo-header">
-          <div class="apo-era">永楽宮　档案　2026年六月初六</div>
-          <div class="apo-title">薬 屋 の ひ と り ご と</div>
-        </div>
-
-        <div class="apo-dialogue">
-          <div class="apo-speaker">猫猫（内心独白）</div>
-          <div class="apo-text maomao">
-            「今日は Diana の生誕日だ。<br>
-            &emsp;按理，须得备贺词。<br>
-            &emsp;壬氏大人又不知在打什么主意……」
-          </div>
-        </div>
-
-        <div class="apo-dialogue">
-          <div class="apo-speaker">壬氏</div>
-          <div class="apo-text">
-            「猫猫。この度は、私に任せてくれ。」
-          </div>
-        </div>
-
-        <div class="apo-dialogue">
-          <div class="apo-speaker">猫猫（内心独白）</div>
-          <div class="apo-text maomao">
-            「（……又来了。）」
-          </div>
-        </div>
-
-        <div class="apo-letter">
-          <div class="apo-letter-header">壬 氏 亲 笔</div>
-          <div class="apo-letter-body">
-            Diana，<br>
-            生辰快乐。<br>
-            <br>
-            愿岁月待你温柔，<br>
-            如你待人之善良。
-          </div>
-          <div class="apo-seal">
-            <div class="apo-sig-text">
-              Jiang 敬上<br>
-              2026.06.06
-            </div>
-            <div class="apo-seal-circle">壬</div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
+<!-- ══════════ BIRTHDAY CARD ══════════ -->
+<div id="bday-card" onclick="exitWorld()">
+  <div class="bcard-inner" id="bcard-inner">
+    <div class="bcard-world" id="bc-world"></div>
+    <hr class="bcard-sep">
+    <div class="bcard-msg1" id="bc-m1"></div>
+    <div class="bcard-msg2" id="bc-m2"></div>
+    <hr class="bcard-sep">
+    <div class="bcard-sig">— Jiang —</div>
+    <div class="bcard-date">2026 · 06 · 06</div>
+    <div class="bcard-return" id="bc-return">← Return to portal</div>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════
+//  WORLD DATA
+// ══════════════════════════════════════
+const W = {
+
+  eva: {
+    accent: '#e07010',
+    chars: [
+      { id:'rei',    name:'REI',    init:'零',  color:'#7878c8' },
+      { id:'kaworu', name:'KAWORU', init:'薫',  color:'#c8c8e8' },
+      { id:'misato', name:'MISATO', init:'美',  color:'#9040a0' },
+    ],
+    lines: [
+      { c:'misato',  t:'全部EVA机体解除战斗状态。这次的使徒威胁已消除。' },
+      { c:'kaworu',  t:'今天……感觉不一样。' },
+      { c:'rei',     t:'……' },
+      { c:'kaworu',  t:'今日は、誰かにとって特別な日のようだ。' },
+      { c:'rei',     t:'……知っています。' },
+      { c:'kaworu',  t:'Diana。お誕生日おめでとう。', hi:true },
+      { c:'rei',     t:'……生日快乐。', hi:true },
+      { c:'misato',  t:'Diana！！！生日快乐！！你绝对值得所有美好的事！！', hi:true },
+      { c:null, isCard:true },
+    ],
+    card: { label:'NERV / MAGI SYSTEM', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
+  },
+
+  chainsaw: {
+    accent: '#cc2020',
+    chars: [
+      { id:'denji',  name:'DENJI',  init:'デ',  color:'#cc6600' },
+      { id:'reze',   name:'REZE',   init:'蕾',  color:'#2a9a7a' },
+      { id:'pochita',name:'POCHITA',init:'♡',  color:'#cc4444' },
+    ],
+    lines: [
+      { c:'denji',   t:'喂……今天是你生日对吧？' },
+      { c:'pochita', t:'（咚咚——）', thought:true },
+      { c:'denji',   t:'波奇塔也在跳……它说生日快乐。它现在在我胸口里，所以，你懂的。' },
+      { c:'reze',    t:'……你记得。' },
+      { c:'denji',   t:'当然了。对我在意的人，我不会忘的。' },
+      { c:'reze',    t:'Diana。生日快乐。', hi:true },
+      { c:'denji',   t:'生日快乐！！我今天要替你吃一大块蛋糕！！', hi:true },
+      { c:'reze',    t:'「あなたは私のために泣いてくれた。」——我也愿意为你哭泣。', hi:true },
+      { c:null, isCard:true },
+    ],
+    card: { label:'チェンソーマン', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
+  },
+
+  aot: {
+    accent: '#7a9a50',
+    chars: [
+      { id:'mikasa', name:'MIKASA', init:'M',  color:'#cc3333' },
+      { id:'armin',  name:'ARMIN',  init:'A',  color:'#c8b840' },
+      { id:'levi',   name:'LEVI',   init:'L',  color:'#8888a0' },
+    ],
+    lines: [
+      { c:'armin',  t:'今天的任务……跟对抗巨人无关。' },
+      { c:'mikasa', t:'是Diana的生日。' },
+      { c:'levi',   t:'……' },
+      { c:'armin',  t:'Diana，生日快乐。你存在于这个世界，这件事本身就很重要。', hi:true },
+      { c:'mikasa', t:'生日快乐。好好活着。', hi:true },
+      { c:'levi',   t:'……把你的心脏，献给好好生活这件事。生日快乐。', hi:true },
+      { c:'levi',   t:'「心臓を捧げよ。」', hi:true },
+      { c:null, isCard:true },
+    ],
+    card: { label:'調査兵団 / SURVEY CORPS', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
+  },
+
+  kimetsu: {
+    accent: '#3a80c0',
+    chars: [
+      { id:'tanjiro',  name:'TANJIRO', init:'炭',  color:'#2a8a70' },
+      { id:'nezuko',   name:'NEZUKO',  init:'禰',  color:'#cc6688' },
+      { id:'zenitsu',  name:'ZENITSU', init:'善',  color:'#c8a820' },
+      { id:'inosuke',  name:'INOSUKE', init:'伊',  color:'#5a8a3a' },
+    ],
+    lines: [
+      { c:'tanjiro',  t:'我闻到了……一股温暖而珍贵的气味。今天有人在庆祝生日！' },
+      { c:'nezuko',   t:'（从竹箱里探出头，用力挥手）', thought:true },
+      { c:'tanjiro',  t:'祢豆子也在为你高兴！Diana，生日快乐！', hi:true },
+      { c:'zenitsu',  t:'生日快乐！！Diana小姐！！我要为你哭出感激的泪水！！', hi:true },
+      { c:'inosuke',  t:'生日！！那就是战斗的号角！！伊之助野猪突破庆祝！！', hi:true },
+      { c:'tanjiro',  t:'全集中——愿你的每一天，都像水面一样，澄澈而安宁。', hi:true },
+      { c:null, isCard:true },
+    ],
+    card: { label:'水の呼吸 / 鬼滅の刃', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
+  },
+
+  deathnote: {
+    accent: '#b8982a',
+    chars: [
+      { id:'l',     name:'L',     init:'L',  color:'#b0b0c8' },
+      { id:'light', name:'LIGHT', init:'月',  color:'#c8a040' },
+      { id:'ryuk',  name:'RYUK',  init:'R',  color:'#7070a8' },
+    ],
+    lines: [
+      { c:'ryuk',  t:'嘿嘿……今天有什么有趣的事情被写在空气里。' },
+      { c:'l',     t:'经过计算，今天是Diana的生日。概率：100%。' },
+      { c:'light', t:'……L，你连别人生日都要分析？' },
+      { c:'l',     t:'我认为这相当值得关注。' },
+      { c:'l',     t:'Diana，生日快乐。', hi:true },
+      { c:'ryuk',  t:'嘿嘿……人类和生日这种东西，真有意思。' },
+      { c:'light', t:'……好吧。生日快乐。', hi:true },
+      { c:'l',     t:'还有一件事需要备注——有人很想你。这个概率，也是100%。', hi:true },
+      { c:null, isCard:true },
+    ],
+    card: { label:'DEATH NOTE', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
+  },
+
+  apothecary: {
+    accent: '#c03030',
+    chars: [
+      { id:'maomao', name:'猫猫',  init:'猫',  color:'#9a8060' },
+      { id:'jinshi', name:'壬氏',  init:'壬',  color:'#c9a227' },
+    ],
+    lines: [
+      { c:'maomao', t:'（今日は Dianaの生誕日か……記録すべき事項。）', thought:true },
+      { c:'jinshi', t:'猫猫，你今天表情很奇怪。' },
+      { c:'maomao', t:'（又来了……）', thought:true },
+      { c:'maomao', t:'没什么，只是在想，按惯例今日应当备贺词。' },
+      { c:'jinshi', t:'那就交给我。' },
+      { c:'maomao', t:'（……他到底要做什么。）', thought:true },
+      { c:'jinshi', t:'Diana。生辰快乐。愿岁月待你温柔，如你待人之善良。', hi:true },
+      { c:'maomao', t:'……Diana，おめでとう。どうか良い一日を。', hi:true },
+      { c:null, isCard:true },
+    ],
+    card: { label:'薬屋のひとりごと / 永楽宮', m1:'Diana，生辰快乐。', m2:'I miss you.' },
+  },
+
+};
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let activeWorld = null;
+let lineIdx = 0;
+let typing = false;
+let typeTimer = null;
+const SPEED = 32; // ms per char
+
+// ══════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════
-let currentWorld = null;
+function enter(worldId) {
+  document.getElementById('portal').classList.add('out');
+  const stage = document.getElementById('st-' + worldId);
+  stage.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.add('active')));
 
-function enterWorld(name) {
-  document.getElementById('portal').classList.add('hidden');
+  const vnui = document.getElementById('vn-ui');
+  vnui.classList.add('on');
 
-  const w = document.getElementById('world-' + name);
-  w.style.display = 'block';
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      w.classList.add('visible', 'active');
-    });
-  });
-
-  currentWorld = name;
-  if (name === 'eva') startEvaSequence();
+  activeWorld = worldId;
+  buildChips(W[worldId]);
+  lineIdx = 0;
+  setTimeout(() => showLine(0), 600);
 }
 
 function exitWorld() {
-  const w = document.getElementById('world-' + currentWorld);
-  w.classList.remove('active');
+  // hide card
+  const card = document.getElementById('bday-card');
+  card.classList.remove('lit');
+  setTimeout(() => card.classList.remove('on'), 400);
 
-  setTimeout(() => {
-    w.classList.remove('visible');
-    w.style.display = 'none';
-    document.getElementById('portal').classList.remove('hidden');
+  const stage = document.getElementById('st-' + activeWorld);
+  stage.classList.remove('active');
+  setTimeout(() => { stage.classList.remove('on'); }, 600);
 
-    // Reset EVA lines for replay
-    if (currentWorld === 'eva') {
-      document.getElementById('eva-lines').innerHTML = '';
-    }
-    currentWorld = null;
-  }, 500);
+  document.getElementById('vn-ui').classList.remove('on');
+  document.getElementById('portal').classList.remove('out');
+
+  clearTimeout(typeTimer);
+  typing = false;
+  activeWorld = null;
+  document.getElementById('char-row').innerHTML = '';
+  document.getElementById('dialogue-text-display').innerHTML = '';
+  document.getElementById('char-name-display').textContent = '';
+  document.getElementById('continue-hint').classList.remove('show');
 }
 
 // ══════════════════════════════════════
-//  EVA TYPEWRITER SEQUENCE
+//  CHIPS
 // ══════════════════════════════════════
-const EVA_LINES = [
-  { text: 'BIRTHDAY PROTOCOL: ACTIVATED', cls: 'green' },
-  { text: '────────────────────────────────', cls: 'dim' },
-  { text: 'DATE    : 2026.06.06', cls: '' },
-  { text: 'SUBJECT : DIANA', cls: '' },
-  { text: 'AGE     : 019', cls: '' },
-  { text: '────────────────────────────────', cls: 'dim' },
-  { text: 'ATフィールド : 展 開 解 除', cls: '' },
-  { text: 'SYNC RATE    : 100.0%', cls: 'green' },
-  { text: '────────────────────────────────', cls: 'dim' },
-  { text: '> Happy Birthday.', cls: 'key' },
-  { text: '> I miss you.', cls: 'key' },
-  { text: '> THIS IS NOT A TEST.', cls: '' },
-  { text: '────────────────────────────────', cls: 'dim' },
-  { text: '— JIANG / NERV / 2026.06.06', cls: 'dim' },
-];
+function buildChips(world) {
+  const row = document.getElementById('char-row');
+  row.innerHTML = '';
+  world.chars.forEach(ch => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.id = 'chip-' + ch.id;
+    chip.style.setProperty('--cc', ch.color);
+    chip.innerHTML = `<div class="chip-circle">${ch.init}</div><div class="chip-label">${ch.name}</div>`;
+    row.appendChild(chip);
+  });
+}
 
+function lightChip(charId) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('lit'));
+  if (charId) {
+    const el = document.getElementById('chip-' + charId);
+    if (el) el.classList.add('lit');
+  }
+}
+
+// ══════════════════════════════════════
+//  DIALOGUE ENGINE
+// ══════════════════════════════════════
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
-async function typeInto(el, text, spd = 18) {
-  for (const ch of text) {
-    el.textContent += ch;
-    await delay(spd);
+function showLine(idx) {
+  const world = W[activeWorld];
+  if (!world || idx >= world.lines.length) return;
+
+  const line = world.lines[idx];
+  lineIdx = idx;
+
+  // End of dialogue → show birthday card
+  if (line.isCard) {
+    showBirthdayCard();
+    return;
+  }
+
+  // Update character name
+  const nameEl = document.getElementById('char-name-display');
+  const char = world.chars.find(c => c.id === line.c);
+  if (char) {
+    nameEl.textContent = char.name;
+    nameEl.style.color = char.color;
+  } else {
+    nameEl.textContent = '';
+  }
+
+  lightChip(line.c);
+  document.getElementById('continue-hint').classList.remove('show');
+
+  // Type text
+  const textEl = document.getElementById('dialogue-text-display');
+  textEl.innerHTML = '';
+  typing = true;
+
+  const isThought = line.thought;
+  const displayText = line.t;
+
+  let i = 0;
+  const span = document.createElement('span');
+  if (isThought) span.className = 'inner-thought';
+  textEl.appendChild(span);
+
+  function tick() {
+    if (i < displayText.length) {
+      span.textContent += displayText[i++];
+      typeTimer = setTimeout(tick, SPEED);
+    } else {
+      typing = false;
+      document.getElementById('continue-hint').classList.add('show');
+    }
+  }
+  tick();
+}
+
+function advance() {
+  if (typing) {
+    // Skip to end
+    clearTimeout(typeTimer);
+    typing = false;
+    const world = W[activeWorld];
+    const line = world.lines[lineIdx];
+    if (!line || line.isCard) return;
+    const textEl = document.getElementById('dialogue-text-display');
+    textEl.innerHTML = '';
+    const span = document.createElement('span');
+    if (line.thought) span.className = 'inner-thought';
+    span.textContent = line.t;
+    textEl.appendChild(span);
+    document.getElementById('continue-hint').classList.add('show');
+  } else {
+    showLine(lineIdx + 1);
   }
 }
 
-async function startEvaSequence() {
-  const container = document.getElementById('eva-lines');
-  await delay(400);
+// ══════════════════════════════════════
+//  BIRTHDAY CARD
+// ══════════════════════════════════════
+function showBirthdayCard() {
+  // hide dialogue box input but keep VN UI
+  const world = W[activeWorld];
+  const card = world.card;
+  const ac = world.accent;
 
-  for (const { text, cls } of EVA_LINES) {
-    const div = document.createElement('div');
-    div.className = 'eva-line' + (cls ? ' ' + cls : '');
-    container.appendChild(div);
-    await typeInto(div, text, text.startsWith('─') ? 5 : 16);
-    await delay(60);
-  }
+  document.getElementById('char-name-display').textContent = '';
+  document.getElementById('dialogue-text-display').innerHTML = '';
+  document.getElementById('continue-hint').classList.remove('show');
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('lit'));
+
+  const bc = document.getElementById('bday-card');
+  bc.style.setProperty('--wac', ac);
+  document.getElementById('bc-world').textContent = card.label;
+  document.getElementById('bc-m1').textContent = card.m1;
+  document.getElementById('bc-m2').textContent = card.m2;
+
+  bc.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => bc.classList.add('lit')));
+
+  document.getElementById('dialogue-box').style.pointerEvents = 'none';
+  setTimeout(() => { document.getElementById('dialogue-box').style.pointerEvents = ''; }, 2000);
 }
 </script>
 </body>

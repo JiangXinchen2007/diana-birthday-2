@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For Diana — 2026.06.06</title>
+<style>
+
+/* ════════════════════════════════════════
+   BASE
+   ════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  min-height: 100%;
+  background: #080808;
+  color: #e8e0d0;
+  font-family: 'Courier New', Courier, monospace;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════════════
+   PORTAL
+   ════════════════════════════════════════ */
+#portal {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px 80px;
+  transition: opacity 0.5s ease;
+}
+
+#portal.hidden { opacity: 0; pointer-events: none; }
+
+.portal-eyebrow {
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: #4a4040;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.portal-title {
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: #f0e8dc;
+  text-shadow: 0 0 40px rgba(255,220,160,0.15);
+  margin-bottom: 8px;
+}
+
+.portal-date {
+  font-size: 12px;
+  letter-spacing: 5px;
+  color: #4a4040;
+  margin-bottom: 56px;
+}
+
+/* Card grid */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.portal-card {
+  border: 1px solid #2a2020;
+  padding: 28px 20px 22px;
+  cursor: pointer;
+  position: relative;
+  background: #0e0a0a;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.portal-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.7;
+  transition: opacity 0.25s;
+}
+
+.portal-card:hover, .portal-card:active {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 0.5px var(--accent);
+}
+
+.portal-card:hover::before, .portal-card:active::before { opacity: 1; }
+
+.card-kanji {
+  font-size: 52px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.18;
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  font-family: serif;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.portal-card:hover .card-kanji,
+.portal-card:active .card-kanji { opacity: 0.35; }
+
+.card-title {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.card-name-jp {
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: #d0c8bc;
+  margin-bottom: 4px;
+  font-family: serif;
+}
+
+.card-name-zh {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #5a5048;
+}
+
+/* ════════════════════════════════════════
+   WORLD BASE
+   ════════════════════════════════════════ */
+.world {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 10;
+}
+
+.world.visible {
+  display: block;
+}
+
+.world.active {
+  opacity: 1;
+}
+
+.back-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.5);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 8px 14px;
+  cursor: pointer;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  transition: color 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-btn:hover, .back-btn:active {
+  color: rgba(255,255,255,0.9);
+  border-color: rgba(255,255,255,0.4);
+}
+
+.world-inner {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px 60px;
+}
+
+/* ════════════════════════════════════════
+   WORLD 1 — EVA
+   ════════════════════════════════════════ */
+#world-eva {
+  background: #070707;
+  font-family: 'Courier New', monospace;
+}
+
+#world-eva::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+#world-eva::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cpolygon points='30,2 58,18 58,50 30,66 2,50 2,18' fill='none' stroke='%235c2a00' stroke-width='0.6'/%3E%3Cpolygon points='30,54 58,70 58,102 30,118 2,102 2,70' fill='none' stroke='%235c2a00' stroke-width='0.6'/%3E%3C/svg%3E");
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.eva-terminal {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 680px;
+  color: #e07010;
+}
+
+.eva-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.eva-wordmark {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 14px;
+  color: #ff8c22;
+  text-shadow: 0 0 20px rgba(255,140,34,0.4);
+  margin-bottom: 6px;
+}
+
+.eva-subhead {
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: #5c2a00;
+}
+
+.eva-sep { border: none; border-top: 1px solid #3a1800; margin: 16px 0; }
+
+.eva-line {
+  font-size: 12px;
+  line-height: 2.1;
+  letter-spacing: 1px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.eva-line.key {
+  font-size: 15px;
+  color: #f2e4cc;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(242,228,204,0.2);
+}
+
+.eva-line.dim { color: #5c2a00; }
+.eva-line.green { color: #18b845; }
+
+@keyframes evaFlicker {
+  0%,96%,100% { opacity: 1; }
+  97% { opacity: 0.85; }
+}
+#world-eva { animation: evaFlicker 12s infinite; }
+
+/* ════════════════════════════════════════
+   WORLD 2 — CHAINSAW MAN
+   ════════════════════════════════════════ */
+#world-chainsaw {
+  background: #0d0b0b;
+}
+
+.csm-bg-noise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.csm-panels {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 6px;
+  width: 100%;
+  max-width: 640px;
+  border: 3px solid #f0f0f0;
+}
+
+.csm-panel {
+  background: #f0f0f0;
+  border: 2px solid #111;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.csm-panel.dark {
+  background: #111;
+  color: #f0f0f0;
+}
+
+.csm-panel.full-width {
+  grid-column: 1 / -1;
+}
+
+.csm-panel-num {
+  font-size: 9px;
+  color: rgba(0,0,0,0.2);
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font-weight: bold;
+}
+
+.csm-panel.dark .csm-panel-num { color: rgba(255,255,255,0.15); }
+
+.csm-big-text {
+  font-size: clamp(22px, 5vw, 38px);
+  font-weight: 900;
+  font-family: serif;
+  color: #111;
+  line-height: 1.2;
+}
+
+.csm-panel.dark .csm-big-text { color: #f0f0f0; }
+
+.csm-red-text {
+  font-size: clamp(22px, 5vw, 38px);
+  font-weight: 900;
+  font-family: serif;
+  color: #cc1a1a;
+  line-height: 1.2;
+}
+
+.csm-small {
+  font-size: 11px;
+  color: #555;
+  line-height: 1.8;
+  margin-top: 8px;
+}
+
+.csm-panel.dark .csm-small { color: #aaa; }
+
+.csm-halftone {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-size: 6px 6px;
+  pointer-events: none;
+}
+
+.csm-slash {
+  position: absolute;
+  top: 0; right: 0;
+  width: 0;
+  height: 0;
+  border-top: 60px solid #cc1a1a;
+  border-left: 60px solid transparent;
+  opacity: 0.7;
+}
+
+.csm-caption {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 11px;
+  color: #5a5048;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+.csm-reze-note {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 10px;
+  color: #6a4040;
+  letter-spacing: 1px;
+  font-style: italic;
+  position: relative;
+  z-index: 2;
+}
+
+/* ════════════════════════════════════════
+   WORLD 3 — ATTACK ON TITAN
+   ════════════════════════════════════════ */
+#world-aot {
+  background: #0f0e0c;
+}
+
+.aot-doc {
+  width: 100%;
+  max-width: 620px;
+  border: 1px solid #3a3420;
+  background: #0d0c0a;
+  position: relative;
+  z-index: 2;
+}
+
+.aot-header-bar {
+  background: #1e1c14;
+  border-bottom: 2px solid #3a3420;
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.aot-title-jp {
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: #8a7a4a;
+  margin-bottom: 4px;
+  font-family: serif;
+}
+
+.aot-title-sub {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #4a4228;
+}
+
+.aot-body {
+  padding: 24px 28px;
+}
+
+.aot-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  border-bottom: 1px solid #2a2416;
+  padding-bottom: 10px;
+}
+
+.aot-label {
+  color: #6a5a32;
+  letter-spacing: 2px;
+  min-width: 80px;
+  font-size: 11px;
+}
+
+.aot-value {
+  color: #c0a860;
+  letter-spacing: 1px;
+}
+
+.aot-message {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #3a3420;
+  background: #0a0904;
+}
+
+.aot-pledge {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: #8a7a4a;
+  margin-bottom: 14px;
+  font-family: serif;
+  text-align: center;
+}
+
+.aot-note {
+  font-size: 11px;
+  color: #7a6a42;
+  line-height: 2.2;
+  letter-spacing: 1px;
+}
+
+.aot-msg-main {
+  font-size: 16px;
+  color: #d0b870;
+  letter-spacing: 3px;
+  margin: 16px 0 8px;
+}
+
+.aot-msg-sub {
+  font-size: 11px;
+  color: #6a5a32;
+  line-height: 2;
+  letter-spacing: 1px;
+}
+
+.aot-footer {
+  background: #1e1c14;
+  border-top: 2px solid #3a3420;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aot-wings {
+  font-size: 22px;
+  color: #8a7a4a;
+  letter-spacing: 4px;
+}
+
+.aot-sig {
+  font-size: 11px;
+  color: #6a5a32;
+  letter-spacing: 2px;
+  text-align: right;
+}
+
+/* ════════════════════════════════════════
+   WORLD 4 — KIMETSU NO YAIBA
+   ════════════════════════════════════════ */
+#world-kimetsu {
+  background: #080810;
+}
+
+.kim-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M0,40 Q20,20 40,40 Q60,60 80,40' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3Cpath d='M0,60 Q20,40 40,60 Q60,80 80,60' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3Cpath d='M0,20 Q20,0 40,20 Q60,40 80,20' fill='none' stroke='%230a1a3a' stroke-width='1'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kim-scroll {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid #1a2a4a;
+  background: #080812;
+  text-align: center;
+  overflow: hidden;
+}
+
+.kim-scroll::before, .kim-scroll::after {
+  content: '';
+  display: block;
+  height: 12px;
+  background: repeating-linear-gradient(90deg, #0a1a3a 0, #0a1a3a 2px, transparent 2px, transparent 8px);
+}
+
+.kim-scroll-inner {
+  padding: 32px 32px 24px;
+}
+
+.kim-header {
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: #2a4a8a;
+  margin-bottom: 8px;
+}
+
+.kim-title {
+  font-size: 22px;
+  letter-spacing: 8px;
+  color: #4a80cc;
+  text-shadow: 0 0 20px rgba(74,128,204,0.3);
+  margin-bottom: 6px;
+  font-family: serif;
+}
+
+.kim-subtitle {
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: #1a3060;
+  margin-bottom: 24px;
+  font-family: serif;
+}
+
+.kim-div {
+  border: none;
+  border-top: 1px solid #1a2a4a;
+  margin: 20px 0;
+}
+
+.kim-to {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #3a5a8a;
+  margin-bottom: 20px;
+}
+
+.kim-msg-main {
+  font-size: 20px;
+  letter-spacing: 6px;
+  color: #f0e8d8;
+  text-shadow: 0 0 30px rgba(240,232,216,0.2);
+  margin-bottom: 20px;
+  font-family: serif;
+}
+
+.kim-msg-poem {
+  font-size: 12px;
+  color: #4a6a9a;
+  line-height: 2.4;
+  letter-spacing: 3px;
+  font-family: serif;
+  margin-bottom: 20px;
+}
+
+.kim-breath {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #2a4070;
+  margin-bottom: 20px;
+}
+
+.kim-sig {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #3a5a7a;
+}
+
+/* ════════════════════════════════════════
+   WORLD 5 — DEATH NOTE
+   ════════════════════════════════════════ */
+#world-deathnote {
+  background: #f5f0e4;
+  color: #1a1a1a;
+}
+
+.dn-back-btn {
+  color: rgba(30,20,0,0.4) !important;
+  border-color: rgba(30,20,0,0.2) !important;
+  background: rgba(245,240,228,0.8) !important;
+}
+
+.dn-back-btn:hover, .dn-back-btn:active {
+  color: rgba(30,20,0,0.8) !important;
+  border-color: rgba(30,20,0,0.4) !important;
+}
+
+.dn-notebook {
+  width: 100%;
+  max-width: 580px;
+  background: #f8f4e4;
+  box-shadow: 0 4px 40px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 2;
+  font-family: 'Courier New', monospace;
+}
+
+.dn-notebook::before {
+  content: '';
+  position: absolute;
+  left: 60px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(200,80,80,0.3);
+}
+
+.dn-cover {
+  background: #1a1a1a;
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dn-cover-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #f0e8d0;
+  letter-spacing: 3px;
+  font-family: serif;
+}
+
+.dn-cover-sub {
+  font-size: 9px;
+  color: #6a5a40;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+.dn-spiral {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dn-spiral span {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #555;
+  border-radius: 50%;
+  display: block;
+}
+
+.dn-lines {
+  padding: 16px 28px 16px 72px;
+}
+
+.dn-rule {
+  border: none;
+  border-bottom: 1px solid rgba(200,80,80,0.25);
+  padding-bottom: 14px;
+  margin-bottom: 0;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  min-height: 38px;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+}
+
+.dn-strikethrough {
+  text-decoration: line-through;
+  color: #8a7050;
+  font-size: 11px;
+}
+
+.dn-written {
+  color: #1a1a1a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dn-written.cursive {
+  font-style: italic;
+  font-family: Georgia, serif;
+  color: #2a2010;
+}
+
+.dn-signed {
+  font-size: 11px;
+  color: #5a4030;
+  letter-spacing: 1px;
+}
+
+.dn-redline {
+  border: none;
+  border-bottom: 1px solid rgba(200,80,80,0.2);
+  min-height: 38px;
+}
+
+.dn-ps {
+  font-size: 10px;
+  color: #7a6040;
+  letter-spacing: 0.5px;
+  font-style: italic;
+}
+
+.dn-l-note {
+  margin-top: 4px;
+  font-size: 9px;
+  color: rgba(0,0,0,0.25);
+  letter-spacing: 0.3px;
+}
+
+/* ════════════════════════════════════════
+   WORLD 6 — APOTHECARY DIARIES
+   ════════════════════════════════════════ */
+#world-apothecary {
+  background: #080404;
+}
+
+.apo-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='20' r='12' fill='none' stroke='%232a0a0a' stroke-width='1'/%3E%3Ccircle cx='50' cy='20' r='8' fill='none' stroke='%232a0a0a' stroke-width='0.7'/%3E%3Ccircle cx='80' cy='70' r='10' fill='none' stroke='%232a0a0a' stroke-width='1'/%3E%3Ccircle cx='20' cy='70' r='10' fill='none' stroke='%232a0a0a' stroke-width='1'/%3E%3Cpath d='M38,20 Q50,35 62,20' fill='none' stroke='%232a0a0a' stroke-width='0.8'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.apo-scroll {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 580px;
+  border: 1px solid #3a1010;
+  background: #0e0606;
+}
+
+.apo-top-border {
+  height: 8px;
+  background: repeating-linear-gradient(90deg, #3a1010 0, #3a1010 4px, #c03030 4px, #c03030 8px, #3a1010 8px, #3a1010 12px, #c9a227 12px, #c9a227 16px);
+  opacity: 0.6;
+}
+
+.apo-inner {
+  padding: 28px 32px 32px;
+}
+
+.apo-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #3a1010;
+}
+
+.apo-era {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #8a3020;
+  margin-bottom: 8px;
+  font-family: serif;
+}
+
+.apo-title {
+  font-size: 13px;
+  letter-spacing: 6px;
+  color: #c9a227;
+  font-family: serif;
+  text-shadow: 0 0 14px rgba(201,162,39,0.3);
+}
+
+.apo-dialogue {
+  margin-bottom: 18px;
+}
+
+.apo-speaker {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #c9a227;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.apo-speaker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(201,162,39,0.2);
+}
+
+.apo-text {
+  font-size: 13px;
+  color: #c0a88a;
+  line-height: 2.2;
+  letter-spacing: 1px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(192,48,48,0.3);
+  font-family: serif;
+}
+
+.apo-text.maomao {
+  font-size: 12px;
+  color: #8a7a60;
+  font-style: italic;
+}
+
+.apo-letter {
+  margin-top: 22px;
+  padding: 20px 24px;
+  border: 1px solid rgba(201,162,39,0.25);
+  background: rgba(201,162,39,0.03);
+}
+
+.apo-letter-header {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: #8a3020;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.apo-letter-body {
+  font-size: 14px;
+  color: #c0a88a;
+  line-height: 2.4;
+  letter-spacing: 2px;
+  font-family: serif;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.apo-seal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.apo-seal-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #c03030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: serif;
+  font-size: 16px;
+  color: #c03030;
+  position: relative;
+}
+
+.apo-seal-circle::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px solid rgba(192,48,48,0.4);
+}
+
+.apo-sig-text {
+  text-align: right;
+  font-size: 11px;
+  color: #6a5040;
+  letter-spacing: 3px;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════ */
+@media (max-width: 840px) {
+  .portal-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 520px) {
+  #portal { padding: 44px 16px 60px; }
+  .portal-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .portal-card { padding: 20px 14px 16px; }
+  .card-kanji { font-size: 38px; }
+  .card-name-jp { font-size: 13px; }
+  .world-inner { padding: 70px 18px 40px; }
+  .csm-panels { gap: 4px; }
+  .aot-doc, .kim-scroll, .dn-notebook, .apo-scroll { max-width: 100%; }
+  .aot-row { flex-direction: column; gap: 2px; }
+  .aot-label { min-width: unset; }
+  .dn-lines { padding-left: 52px; }
+  .dn-notebook::before { left: 44px; }
+  .apo-inner { padding: 20px 18px 24px; }
+  .kim-scroll-inner { padding: 24px 18px 18px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     PORTAL
+     ══════════════════════════════════════ -->
+<div id="portal">
+  <p class="portal-eyebrow">A birthday gift</p>
+  <h1 class="portal-title">For Diana</h1>
+  <p class="portal-date">2 0 2 6 · 0 6 · 0 6</p>
+
+  <div class="portal-grid">
+
+    <div class="portal-card" style="--accent:#e07010" onclick="enterWorld('eva')">
+      <div class="card-kanji">神</div>
+      <div class="card-title">01</div>
+      <div class="card-name-jp">新世紀エヴァンゲリオン</div>
+      <div class="card-name-zh">新世纪福音战士</div>
+    </div>
+
+    <div class="portal-card" style="--accent:#cc2020" onclick="enterWorld('chainsaw')">
+      <div class="card-kanji">電</div>
+      <div class="card-title">02</div>
+      <div class="card-name-jp">チェンソーマン</div>
+      <div class="card-name-zh">电锯人</div>
+    </div>
+
+    <div class="portal-card" style="--accent:#6a8a4a" onclick="enterWorld('aot')">
+      <div class="card-kanji">翼</div>
+      <div class="card-title">03</div>
+      <div class="card-name-jp">進撃の巨人</div>
+      <div class="card-name-zh">进击的巨人</div>
+    </div>
+
+    <div class="portal-card" style="--accent:#3a7aaa" onclick="enterWorld('kimetsu')">
+      <div class="card-kanji">水</div>
+      <div class="card-title">04</div>
+      <div class="card-name-jp">鬼滅の刃</div>
+      <div class="card-name-zh">鬼灭之刃</div>
+    </div>
+
+    <div class="portal-card" style="--accent:#c0a040" onclick="enterWorld('deathnote')">
+      <div class="card-kanji">死</div>
+      <div class="card-title">05</div>
+      <div class="card-name-jp">デスノート</div>
+      <div class="card-name-zh">死亡笔记</div>
+    </div>
+
+    <div class="portal-card" style="--accent:#c03030" onclick="enterWorld('apothecary')">
+      <div class="card-kanji">薬</div>
+      <div class="card-title">06</div>
+      <div class="card-name-jp">薬屋のひとりごと</div>
+      <div class="card-name-zh">药屋少女的呢喃</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORLD 1 — EVA
+     ══════════════════════════════════════ -->
+<div id="world-eva" class="world">
+  <button class="back-btn" onclick="exitWorld()">← BACK</button>
+  <div class="world-inner">
+    <div class="eva-terminal">
+      <div class="eva-header">
+        <div class="eva-wordmark">N E R V</div>
+        <div class="eva-subhead">神経　／　MAGI SUPERCOMPUTER SYSTEM</div>
+      </div>
+      <hr class="eva-sep">
+      <div id="eva-lines"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORLD 2 — CHAINSAW MAN
+     ══════════════════════════════════════ -->
+<div id="world-chainsaw" class="world">
+  <button class="back-btn" onclick="exitWorld()">← BACK</button>
+  <div class="csm-bg-noise"></div>
+  <div class="world-inner">
+    <div class="csm-panels">
+
+      <div class="csm-panel dark">
+        <div class="csm-halftone"></div>
+        <div class="csm-panel-num">1</div>
+        <div class="csm-big-text" style="font-size:clamp(28px,8vw,52px);letter-spacing:2px;color:#cc1a1a;">チェンソーマン</div>
+        <div class="csm-small" style="margin-top:12px;color:#555">蕾塞篇&emsp;Bomb Girl Arc</div>
+      </div>
+
+      <div class="csm-panel">
+        <div class="csm-halftone"></div>
+        <div class="csm-slash"></div>
+        <div class="csm-panel-num">2</div>
+        <div class="csm-big-text">Diana——</div>
+        <div class="csm-small" style="color:#333;margin-top:10px;">生日快乐。</div>
+      </div>
+
+      <div class="csm-panel full-width" style="background:#111;">
+        <div class="csm-halftone"></div>
+        <div class="csm-panel-num" style="color:rgba(255,255,255,0.15)">3</div>
+        <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+          <div>
+            <div class="csm-big-text" style="color:#f0f0f0;font-size:clamp(16px,4vw,24px);letter-spacing:1px;line-height:1.6;">
+              「我不太会说好听的话——」
+            </div>
+            <div class="csm-big-text" style="color:#cc1a1a;font-size:clamp(22px,5vw,36px);margin-top:12px;">
+              我很想你。
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="csm-caption">— Jiang&emsp;2026.06.06</div>
+    <div class="csm-reze-note">「あなたは私のために泣いてくれた。」&emsp;— Reze</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORLD 3 — ATTACK ON TITAN
+     ══════════════════════════════════════ -->
+<div id="world-aot" class="world">
+  <button class="back-btn" onclick="exitWorld()">← BACK</button>
+  <div class="world-inner">
+    <div class="aot-doc">
+
+      <div class="aot-header-bar">
+        <div class="aot-title-jp">第一〇四期訓練兵団　特別調査報告書</div>
+        <div class="aot-title-sub">SURVEY CORPS — CLASSIFIED DOCUMENT</div>
+      </div>
+
+      <div class="aot-body">
+        <div class="aot-row">
+          <span class="aot-label">対 象 者</span>
+          <span class="aot-value">DIANA</span>
+        </div>
+        <div class="aot-row">
+          <span class="aot-label">生 誕 日</span>
+          <span class="aot-value">2026.06.06 &emsp;/&emsp; 19歳</span>
+        </div>
+        <div class="aot-row">
+          <span class="aot-label">任 　 務</span>
+          <span class="aot-value" style="color:#8a7a4a;font-style:italic">[BIRTHDAY PROTOCOL]</span>
+        </div>
+
+        <div class="aot-message">
+          <div class="aot-pledge">「 心臓を捧げよ。」</div>
+          <div class="aot-note">これは命令ではない。<br>ただ、あなたのことを——</div>
+          <div class="aot-msg-main">生日快乐，Diana。</div>
+          <div class="aot-msg-sub">
+            忘れたことは、一度もない。<br>
+            I miss you.
+          </div>
+        </div>
+      </div>
+
+      <div class="aot-footer">
+        <div class="aot-wings">❧ ✦ ❦</div>
+        <div class="aot-sig">
+          調査兵団<br>
+          JIANG &emsp; 2026.06.06
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORLD 4 — KIMETSU NO YAIBA
+     ══════════════════════════════════════ -->
+<div id="world-kimetsu" class="world">
+  <button class="back-btn" onclick="exitWorld()">← BACK</button>
+  <div class="kim-bg"></div>
+  <div class="world-inner">
+    <div class="kim-scroll">
+      <div class="kim-scroll-inner">
+        <div class="kim-header">水 の 呼 吸</div>
+        <div class="kim-title">特 別 の 型</div>
+        <div class="kim-subtitle">誕 生 祝 い の 剣</div>
+
+        <hr class="kim-div">
+
+        <div class="kim-to">Diana &emsp; へ</div>
+
+        <div class="kim-msg-main">生日快乐。</div>
+
+        <div class="kim-msg-poem">
+          願わくば、あなたの日々が<br>
+          水面のように、<br>
+          穏やかで、澄んでいますように。<br><br>
+          愿岁月待你温柔。
+        </div>
+
+        <div class="kim-breath">全集中・常中</div>
+
+        <hr class="kim-div">
+
+        <div class="kim-sig">Jiang &emsp;／&emsp; 2026.06.06</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORLD 5 — DEATH NOTE
+     ══════════════════════════════════════ -->
+<div id="world-deathnote" class="world">
+  <button class="back-btn dn-back-btn" onclick="exitWorld()">← BACK</button>
+  <div class="world-inner">
+    <div class="dn-notebook">
+
+      <div class="dn-cover">
+        <div class="dn-spiral">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div>
+          <div class="dn-cover-title">DEATH NOTE</div>
+          <div class="dn-cover-sub">THE NOTEBOOK OF DEATH</div>
+        </div>
+      </div>
+
+      <div class="dn-lines">
+
+        <div class="dn-rule">
+          <span class="dn-written" style="font-size:10px;color:#9a8060;font-style:italic">
+            The human whose name is written in this note —
+          </span>
+        </div>
+
+        <div class="dn-rule">
+          <span class="dn-strikethrough">Diana &nbsp; shall die on 2026.06.06</span>
+        </div>
+
+        <div class="dn-redline"></div>
+
+        <div class="dn-rule" style="min-height:48px;">
+          <span class="dn-written cursive">
+            Diana shall, on this day 2026.06.06,<br>
+            receive the most sincere birthday wishes.
+          </span>
+        </div>
+
+        <div class="dn-rule">
+          <span class="dn-written cursive">Happy Birthday.</span>
+        </div>
+
+        <div class="dn-rule">
+          <span class="dn-written cursive">I miss you.</span>
+        </div>
+
+        <div class="dn-redline"></div>
+
+        <div class="dn-rule">
+          <span class="dn-signed">Written by : Jiang &emsp; Date : 2026.06.06</span>
+        </div>
+
+        <div class="dn-rule" style="border:none;padding-top:6px;">
+          <div>
+            <div class="dn-ps">P.S. &nbsp; I hope you're doing well.</div>
+            <div class="dn-l-note">— L would have already deduced that I miss you.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORLD 6 — APOTHECARY DIARIES
+     ══════════════════════════════════════ -->
+<div id="world-apothecary" class="world">
+  <button class="back-btn" onclick="exitWorld()">← BACK</button>
+  <div class="apo-bg"></div>
+  <div class="world-inner">
+    <div class="apo-scroll">
+
+      <div class="apo-top-border"></div>
+
+      <div class="apo-inner">
+
+        <div class="apo-header">
+          <div class="apo-era">永楽宮　档案　2026年六月初六</div>
+          <div class="apo-title">薬 屋 の ひ と り ご と</div>
+        </div>
+
+        <div class="apo-dialogue">
+          <div class="apo-speaker">猫猫（内心独白）</div>
+          <div class="apo-text maomao">
+            「今日は Diana の生誕日だ。<br>
+            &emsp;按理，须得备贺词。<br>
+            &emsp;壬氏大人又不知在打什么主意……」
+          </div>
+        </div>
+
+        <div class="apo-dialogue">
+          <div class="apo-speaker">壬氏</div>
+          <div class="apo-text">
+            「猫猫。この度は、私に任せてくれ。」
+          </div>
+        </div>
+
+        <div class="apo-dialogue">
+          <div class="apo-speaker">猫猫（内心独白）</div>
+          <div class="apo-text maomao">
+            「（……又来了。）」
+          </div>
+        </div>
+
+        <div class="apo-letter">
+          <div class="apo-letter-header">壬 氏 亲 笔</div>
+          <div class="apo-letter-body">
+            Diana，<br>
+            生辰快乐。<br>
+            <br>
+            愿岁月待你温柔，<br>
+            如你待人之善良。
+          </div>
+          <div class="apo-seal">
+            <div class="apo-sig-text">
+              Jiang 敬上<br>
+              2026.06.06
+            </div>
+            <div class="apo-seal-circle">壬</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════
+let currentWorld = null;
+
+function enterWorld(name) {
+  document.getElementById('portal').classList.add('hidden');
+
+  const w = document.getElementById('world-' + name);
+  w.style.display = 'block';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      w.classList.add('visible', 'active');
+    });
+  });
+
+  currentWorld = name;
+  if (name === 'eva') startEvaSequence();
+}
+
+function exitWorld() {
+  const w = document.getElementById('world-' + currentWorld);
+  w.classList.remove('active');
+
+  setTimeout(() => {
+    w.classList.remove('visible');
+    w.style.display = 'none';
+    document.getElementById('portal').classList.remove('hidden');
+
+    // Reset EVA lines for replay
+    if (currentWorld === 'eva') {
+      document.getElementById('eva-lines').innerHTML = '';
+    }
+    currentWorld = null;
+  }, 500);
+}
+
+// ══════════════════════════════════════
+//  EVA TYPEWRITER SEQUENCE
+// ══════════════════════════════════════
+const EVA_LINES = [
+  { text: 'BIRTHDAY PROTOCOL: ACTIVATED', cls: 'green' },
+  { text: '────────────────────────────────', cls: 'dim' },
+  { text: 'DATE    : 2026.06.06', cls: '' },
+  { text: 'SUBJECT : DIANA', cls: '' },
+  { text: 'AGE     : 019', cls: '' },
+  { text: '────────────────────────────────', cls: 'dim' },
+  { text: 'ATフィールド : 展 開 解 除', cls: '' },
+  { text: 'SYNC RATE    : 100.0%', cls: 'green' },
+  { text: '────────────────────────────────', cls: 'dim' },
+  { text: '> Happy Birthday.', cls: 'key' },
+  { text: '> I miss you.', cls: 'key' },
+  { text: '> THIS IS NOT A TEST.', cls: '' },
+  { text: '────────────────────────────────', cls: 'dim' },
+  { text: '— JIANG / NERV / 2026.06.06', cls: 'dim' },
+];
+
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+async function typeInto(el, text, spd = 18) {
+  for (const ch of text) {
+    el.textContent += ch;
+    await delay(spd);
+  }
+}
+
+async function startEvaSequence() {
+  const container = document.getElementById('eva-lines');
+  await delay(400);
+
+  for (const { text, cls } of EVA_LINES) {
+    const div = document.createElement('div');
+    div.className = 'eva-line' + (cls ? ' ' + cls : '');
+    container.appendChild(div);
+    await typeInto(div, text, text.startsWith('─') ? 5 : 16);
+    await delay(60);
+  }
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,17 +46,23 @@ html, body {
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 12px; width: 100%; max-width: 840px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; width: 100%; max-width: 980px;
+}
+.grid-row {
+  display: flex; gap: 12px;
+  justify-content: center;
+  width: 100%;
 }
 
 .card {
+  flex: 0 0 calc(25% - 9px);
   border: 1px solid #221818;
   padding: 24px 18px 18px;
   background: #0c0808;
   cursor: pointer; position: relative; overflow: hidden;
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  transition: transform .22s ease, box-shadow .22s ease,
+              border-color .22s ease, background .22s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .card::before {
@@ -71,6 +77,18 @@ html, body {
   box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 .5px var(--ac);
 }
 .card:hover::before, .card:active::before { opacity:1; height:3px; }
+
+/* Completed state */
+.card.done { background: #120a04; border-color: var(--ac); }
+.card.done::before { opacity:.9; height:2px; }
+.card.done .card-kanji { opacity:.28; }
+.card-done-mark {
+  display: none;
+  position: absolute; bottom: 8px; right: 10px;
+  font-size: 9px; letter-spacing: 1px;
+  color: var(--ac); opacity: .7;
+}
+.card.done .card-done-mark { display: block; }
 
 .card-kanji {
   font-size: 56px; font-family: serif;
@@ -102,7 +120,7 @@ html, body {
   transition: opacity .6s ease;
   z-index: 10;
 }
-.stage.on { display:block; }
+.stage.on  { display:block; }
 .stage.active { opacity:1; }
 
 /* EVA stage */
@@ -157,8 +175,7 @@ html, body {
 .aot-wings-bg {
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
   font-size: min(40vw,280px); color: rgba(100,90,40,.04);
-  pointer-events:none; font-family:serif; white-space:nowrap;
-  line-height:1;
+  pointer-events:none; font-family:serif; white-space:nowrap; line-height:1;
 }
 
 /* Kimetsu stage */
@@ -180,9 +197,7 @@ html, body {
 }
 
 /* Death Note stage */
-#st-deathnote {
-  background: #0a0806;
-}
+#st-deathnote { background: #0a0806; }
 .dn-light {
   position:absolute; top:0; left:50%; transform:translateX(-50%);
   width:50vw; height:60vh;
@@ -192,6 +207,32 @@ html, body {
 .dn-lines-bg {
   position:absolute; inset:0;
   background-image: repeating-linear-gradient(0deg, transparent 0, transparent 34px, rgba(160,80,80,.05) 34px, rgba(160,80,80,.05) 35px);
+  pointer-events:none;
+}
+
+/* NANA stage */
+#st-nana {
+  background: radial-gradient(ellipse at 50% 30%, #0e0306 0%, #060204 85%);
+}
+.nana-lines {
+  position:absolute; inset:0;
+  background-image: repeating-linear-gradient(90deg, transparent, transparent 55px, rgba(180,20,50,.025) 55px, rgba(180,20,50,.025) 56px);
+  pointer-events:none;
+}
+.nana-glow {
+  position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:70vw; height:35vh;
+  background: radial-gradient(ellipse, rgba(180,20,50,.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+/* Jiang stage */
+#st-jiang {
+  background: radial-gradient(ellipse at 50% 50%, #09080505 0%, #060504 80%);
+}
+.jiang-glow {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,160,80,.04) 0%, transparent 60%);
   pointer-events:none;
 }
 
@@ -229,10 +270,28 @@ html, body {
   backdrop-filter:blur(4px);
   transition:color .2s, border-color .2s;
   -webkit-tap-highlight-color:transparent;
+  z-index: 5;
 }
 #back-btn:hover, #back-btn:active {
   color:rgba(255,255,255,.85); border-color:rgba(255,255,255,.35);
 }
+
+/* Character portrait */
+#char-portrait {
+  position: absolute;
+  bottom: 148px;
+  left: 50%; transform: translateX(-50%);
+  height: 64vh; max-height: 520px;
+  width: auto; max-width: 70vw;
+  object-fit: contain; object-position: bottom center;
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+#char-portrait.show { opacity: 1; }
 
 /* Character chips */
 #char-row {
@@ -240,6 +299,7 @@ html, body {
   bottom: 162px; left:0; right:0;
   display:flex; justify-content:center; gap:14px;
   padding:0 20px;
+  z-index: 2;
 }
 .chip {
   display:flex; flex-direction:column; align-items:center; gap:5px;
@@ -255,14 +315,11 @@ html, body {
   background:rgba(0,0,0,.6);
   box-shadow:none; transition:box-shadow .25s;
 }
-.chip.lit .chip-circle {
-  box-shadow: 0 0 14px var(--cc);
-}
+.chip.lit .chip-circle { box-shadow: 0 0 14px var(--cc); }
 .chip-label {
   font-size:8px; letter-spacing:1.5px;
   color:rgba(255,255,255,.3);
-  transition:color .25s;
-  white-space:nowrap;
+  transition:color .25s; white-space:nowrap;
 }
 .chip.lit .chip-label { color:var(--cc); }
 
@@ -275,12 +332,12 @@ html, body {
   padding:16px 24px 20px;
   cursor:pointer; pointer-events:all;
   backdrop-filter:blur(6px);
+  z-index: 2;
 }
 #char-name-display {
   font-size:12px; letter-spacing:3px;
   margin-bottom:8px; font-weight:bold;
-  min-height:16px;
-  transition:color .3s;
+  min-height:16px; transition:color .3s;
 }
 #dialogue-text-display {
   font-size: clamp(13px,3.5vw,15px);
@@ -296,320 +353,1505 @@ html, body {
   opacity:0; transition:opacity .4s;
 }
 #continue-hint.show { opacity:1; }
-
 @keyframes hintPulse { 0%,100%{opacity:.2} 50%{opacity:.6} }
 #continue-hint.show { animation:hintPulse 1.4s infinite; }
 
+/* World-end flash */
+@keyframes worldEndFlash {
+  0%   { background: rgba(255,255,255,0); }
+  30%  { background: rgba(255,255,255,.04); }
+  100% { background: rgba(255,255,255,0); }
+}
+.stage.end-flash { animation: worldEndFlash .8s ease-out; }
+
 /* ══════════════════════════════════════
-   BIRTHDAY CARD
+   ENVELOPE OVERLAY  (unlock after 7 worlds)
    ══════════════════════════════════════ */
-#bday-card {
-  position:fixed; inset:0; z-index:30;
-  display:none; flex-direction:column;
-  align-items:center; justify-content:center;
-  padding:40px 24px;
-  background:rgba(4,2,2,.0);
-  transition:background .8s ease;
-  cursor:pointer;
+#env-overlay {
+  position: fixed; inset: 0; z-index: 40;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(4,2,2,0);
+  transition: background 1.2s ease;
+  pointer-events: none;
 }
-#bday-card.on { display:flex; }
-#bday-card.lit { background:rgba(4,2,2,.92); }
+#env-overlay.on  { display: flex; }
+#env-overlay.lit { background: rgba(4,2,2,.88); pointer-events: all; }
 
-.bcard-inner {
-  text-align:center; opacity:0;
-  transition:opacity 1.2s ease; max-width:560px; width:100%;
+/* Scene fades + rises in */
+#env-scene {
+  display: flex; flex-direction: column; align-items: center; gap: 26px;
+  opacity: 0; transform: translateY(24px) scale(0.92);
+  transition: opacity 1.4s cubic-bezier(0.22,1,0.36,1),
+              transform 1.4s cubic-bezier(0.22,1,0.36,1);
 }
-#bday-card.lit .bcard-inner { opacity:1; }
+#env-overlay.lit #env-scene { opacity: 1; transform: none; }
 
-.bcard-world {
-  font-size:10px; letter-spacing:5px;
-  color:var(--wac); margin-bottom:20px; opacity:.6;
+/* ── Envelope shell ── */
+#envelope {
+  position: relative; width: 300px; height: 196px;
+  cursor: pointer;
+  filter: drop-shadow(0 20px 50px rgba(0,0,0,.75));
+  transition: filter .35s ease;
 }
-.bcard-sep {
-  border:none; border-top:1px solid var(--wac);
-  margin:18px 0; opacity:.2;
+#envelope:hover {
+  filter: drop-shadow(0 24px 56px rgba(0,0,0,.75))
+          drop-shadow(0 0 30px rgba(200,150,50,.12));
 }
-.bcard-msg1 {
-  font-size:clamp(20px,5vw,28px); letter-spacing:4px;
-  color:#f0e8dc; margin-bottom:12px; line-height:1.4;
-  text-shadow:0 0 40px rgba(255,220,160,.2);
+
+/* Envelope body */
+.env-body {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #1e1208 0%, #130b05 100%);
+  border: 1px solid rgba(200,155,55,.16);
+  overflow: hidden;
 }
-.bcard-msg2 {
-  font-size:clamp(15px,4vw,19px); letter-spacing:3px;
-  color:var(--wac); margin-bottom:28px;
-  text-shadow:0 0 24px var(--wac);
+/* X fold lines */
+.env-body::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to top right,   transparent 49.3%, rgba(200,155,55,.07) 49.3%, rgba(200,155,55,.07) 50.3%, transparent 50.3%),
+    linear-gradient(to top left,    transparent 49.3%, rgba(200,155,55,.07) 49.3%, rgba(200,155,55,.07) 50.3%, transparent 50.3%),
+    linear-gradient(to bottom right,transparent 49.6%, rgba(200,155,55,.04) 49.6%, rgba(200,155,55,.04) 50.4%, transparent 50.4%),
+    linear-gradient(to bottom left, transparent 49.6%, rgba(200,155,55,.04) 49.6%, rgba(200,155,55,.04) 50.4%, transparent 50.4%);
+  pointer-events: none;
 }
-.bcard-sig {
-  font-size:12px; letter-spacing:5px; color:rgba(255,255,255,.25);
-  margin-bottom:8px;
+
+/* Letter peeking from inside */
+#env-letter-peek {
+  position: absolute;
+  bottom: 6px; left: 10px; right: 10px; height: 55%;
+  background: linear-gradient(170deg, #1c1108, #130c06);
+  border: 1px solid rgba(200,155,55,.06);
+  transform: translateY(0);
+  transition: transform 1s cubic-bezier(0.22,1,0.36,1) 0.6s;
+  z-index: 0;
 }
-.bcard-date { font-size:10px; letter-spacing:3px; color:rgba(255,255,255,.15); }
-.bcard-return {
-  margin-top:32px; font-size:11px; letter-spacing:3px;
-  color:rgba(255,255,255,.2); cursor:pointer;
-  border:1px solid rgba(255,255,255,.1);
-  padding:8px 20px; display:inline-block;
-  transition:color .2s, border-color .2s;
-  pointer-events:all;
+#envelope.open #env-letter-peek {
+  transform: translateY(-22px);
 }
-.bcard-return:hover, .bcard-return:active {
-  color:rgba(255,255,255,.6); border-color:rgba(255,255,255,.3);
+
+/* ── Animated flap ── */
+#env-flap-outer {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 60%;        /* covers the upper 60% of the envelope */
+  perspective: 600px;
+  z-index: 2;
+}
+#env-flap {
+  display: block; width: 100%; height: 100%;
+  transform-origin: 50% 0%;
+  transform: rotateX(0deg);
+  transition: transform 1s cubic-bezier(0.4,0,0.15,1) 0.28s;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+#envelope.open #env-flap { transform: rotateX(-170deg); }
+
+/* ── Wax seal ── */
+#env-seal {
+  position: absolute; top: 47%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px; height: 52px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #d89030 0%, #8e4e14 60%, #6c3410 100%);
+  border: 1.5px solid rgba(220,175,80,.38);
+  box-shadow: 0 4px 20px rgba(180,100,20,.42),
+              0 1px 6px rgba(0,0,0,.55),
+              inset 0 1px 0 rgba(255,210,100,.22);
+  z-index: 3;
+  transition: transform .35s ease, opacity .35s ease, box-shadow .3s ease;
+}
+#envelope:hover #env-seal {
+  box-shadow: 0 6px 26px rgba(220,135,25,.55),
+              0 1px 6px rgba(0,0,0,.55),
+              inset 0 1px 0 rgba(255,210,100,.22);
+}
+#envelope.open #env-seal {
+  animation: sealBreak .55s cubic-bezier(0.4,0,0.6,1) forwards;
+}
+@keyframes sealBreak {
+  0%  { transform: translate(-50%,-50%) scale(1);    opacity:1; }
+  35% { transform: translate(-50%,-50%) scale(1.14); opacity:.75; }
+  100%{ transform: translate(-50%,-50%) scale(0);    opacity:0; }
+}
+
+/* ── Hint below envelope ── */
+#env-hint {
+  font-size: 11px; letter-spacing: 5px;
+  color: rgba(200,155,55,.48);
+  transition: opacity .5s;
+}
+#env-hint.pulse { animation: envPulse 2.4s ease-in-out infinite; }
+#env-hint.hide  { opacity: 0 !important; }
+@keyframes envPulse {
+  0%,100%{ opacity: .42; }
+  50%    { opacity: .88; }
+}
+
+/* ══════════════════════════════════════
+   LETTER OVERLAY
+   ══════════════════════════════════════ */
+#letter-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  display: none; align-items: center; justify-content: center;
+  background: #060504;
+  opacity: 0; overflow-y: auto;
+  transition: opacity .8s ease;
+  pointer-events: none;
+}
+#letter-overlay.on  { display: flex; }
+#letter-overlay.lit { opacity: 1; pointer-events: all; }
+
+#letter-paper {
+  max-width: 560px; width: 90%;
+  padding: 52px 48px 48px;
+  margin: auto;
+  background: linear-gradient(170deg, #110a06 0%, #0d0704 100%);
+  border: 1px solid rgba(200,155,55,.1);
+  box-shadow: 0 40px 80px rgba(0,0,0,.85),
+              inset 0 1px 0 rgba(200,155,55,.07);
+  position: relative;
+  opacity: 0; transform: translateY(22px);
+  transition: opacity .9s ease .15s, transform .9s cubic-bezier(0.22,1,0.36,1) .15s;
+}
+#letter-overlay.lit #letter-paper { opacity: 1; transform: none; }
+/* Top decorative rule */
+#letter-paper::before {
+  content: '';
+  position: absolute; top: 0; left: 48px; right: 48px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,155,55,.28), transparent);
+}
+
+.letter-date {
+  font-size: 10px; letter-spacing: 6px;
+  color: rgba(200,155,55,.32); margin-bottom: 38px; text-align: center;
+}
+
+.letter-body {
+  font-size: clamp(13px,2.2vw,15px); line-height: 2.1; letter-spacing: .4px;
+  color: #c0b090;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity .85s ease .45s, transform .85s ease .45s;
+}
+#letter-overlay.lit .letter-body { opacity: 1; transform: none; }
+.letter-body p { margin-bottom: 1.5em; }
+.letter-body p:last-child { margin-bottom: 0; }
+
+.letter-hi {
+  color: #e8d4a8; font-size: clamp(15px,2.6vw,18px);
+  letter-spacing: 1px;
+}
+
+.letter-sig {
+  margin-top: 40px; padding-top: 24px;
+  border-top: 1px solid rgba(200,155,55,.09);
+  text-align: right;
+  font-size: 12px; letter-spacing: 5px;
+  color: rgba(200,155,55,.48);
+  opacity: 0; transition: opacity 1s ease .7s;
+}
+#letter-overlay.lit .letter-sig { opacity: 1; }
+
+.letter-date-sig {
+  font-size: 10px; letter-spacing: 3px;
+  color: rgba(255,255,255,.1); margin-top: 6px; text-align: right;
+}
+
+.letter-return-wrap {
+  text-align: center; margin-top: 52px;
+  opacity: 0; transition: opacity 1s ease .9s;
+}
+#letter-overlay.lit .letter-return-wrap { opacity: 1; }
+.letter-return {
+  font-size: 10px; letter-spacing: 3px;
+  color: rgba(255,255,255,.16); cursor: pointer;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 9px 22px; display: inline-block;
+  transition: color .2s, border-color .2s;
+  pointer-events: all;
+}
+.letter-return:hover, .letter-return:active {
+  color: rgba(255,255,255,.48); border-color: rgba(255,255,255,.24);
 }
 
 /* ══════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════ */
 @media(max-width:720px) {
-  .grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .grid { gap:10px; }
+  .card { flex: 0 0 calc(50% - 5px); padding:18px 14px 14px; }
   .p-title { letter-spacing:5px; }
   .p-sub { margin-bottom:30px; }
-  .card { padding:18px 14px 14px; }
   .card-kanji { font-size:42px; }
+  #char-portrait { height:52vh; max-height:380px; bottom:148px; }
   #char-row { gap:8px; bottom:158px; }
   .chip-circle { width:38px; height:38px; font-size:11px; }
   #dialogue-box { padding:14px 18px 18px; }
+  .fc-w-name { min-width:70px; font-size:9px; }
+  .fc-w-chars { font-size:9px; letter-spacing:2px; }
 }
-
 @media(max-width:400px) {
   .grid { gap:8px; }
   .card-jp { font-size:11px; }
   #char-row { bottom:152px; }
   .chip-circle { width:34px; height:34px; font-size:10px; }
   .chip-label { display:none; }
+  #char-portrait { height:44vh; max-width:85vw; }
+  .fc-cast-row { flex-direction:column; align-items:center; gap:2px; }
+  .fc-w-name { text-align:center; min-width:unset; }
+}
+
+/* Many-character worlds: compact + scrollable chips (mobile default) */
+#char-row.many-chars {
+  gap: 5px;
+  justify-content: center;   /* JS overrides to flex-start if overflow */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 16px;
+}
+#char-row.many-chars::-webkit-scrollbar { display: none; }
+#char-row.many-chars .chip-circle {
+  width: 32px; height: 32px; font-size: 9px;
+}
+#char-row.many-chars .chip-label { display: none; }
+
+/* Desktop: many-chars worlds restore full chip size + labels + no overflow clip */
+@media(min-width:721px) {
+  #char-row.many-chars {
+    gap: 14px;
+    padding: 0 20px;
+    overflow: visible;   /* desktop doesn't need scroll; allow glows to render fully */
+  }
+  #char-row.many-chars .chip-circle {
+    width: 46px; height: 46px; font-size: 13px;
+  }
+  #char-row.many-chars .chip-label {
+    display: block;
+  }
+}
+
+/* Pochita is tiny — scale down its portrait */
+#char-portrait[data-char="pochita"] {
+  height: 30vh;
+  max-height: 200px;
+}
+
+/* ══════════════════════════════════════
+   MUTE BUTTON
+   ══════════════════════════════════════ */
+#mute-btn {
+  position: fixed; top: 16px; right: 16px;
+  z-index: 100;
+  background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.09);
+  color: rgba(255,255,255,.32); font-family: 'Courier New', monospace;
+  font-size: 13px; letter-spacing: 1px; padding: 6px 11px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: color .2s, border-color .2s, opacity .25s;
+  -webkit-tap-highlight-color: transparent;
+}
+#mute-btn:hover, #mute-btn:active {
+  color: rgba(255,255,255,.7); border-color: rgba(255,255,255,.28);
+}
+#mute-btn.muted { opacity: .38; }
+
+/* ══════════════════════════════════════
+   GROUP FINALE OVERLAY
+   ══════════════════════════════════════ */
+#gf-overlay {
+  position: absolute; inset: 0;
+  z-index: 3;
+  background: rgba(4,2,2,0.85);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.55s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  /* Stack portraits + text bar at the bottom; dark space sits above naturally */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+#gf-overlay.on { opacity: 1; pointer-events: all; }
+
+/* Portrait strip — explicit vh height so it stays proportional on every device */
+#gf-portraits {
+  flex-shrink: 0;
+  height: 62vh;          /* default: desktop & landscape */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 6px;
+}
+
+/* Images fill 100% of the strip height.
+   flex-shrink:0 prevents width compression — JS scales height down if needed */
+.gf-char {
+  height: 100%;
+  width: auto;
+  flex-shrink: 0;            /* never squeeze horizontally */
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  opacity: 0; transform: translateY(22px);
+  transition: opacity 0.4s ease-out,
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  display: block;
+}
+.gf-char.show { opacity: 1; transform: translateY(0); }
+
+/* Large cast: slightly shorter strip so wide chars (Power, Mitsuri) don't crowd */
+#gf-portraits[data-cast="large"] { height: 56vh; }
+
+/* Pochita — tiny pet, ~22% of strip height */
+.gf-char[data-char="pochita"] { height: 22% !important; }
+
+#gf-bottom {
+  flex-shrink: 0;
+  padding: 12px 24px calc(28px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  background: linear-gradient(to bottom, transparent, rgba(4,2,2,0.94) 36%);
+  pointer-events: none;
+}
+#gf-text {
+  font-size: clamp(14px, 3.8vw, 24px);
+  letter-spacing: 5px; font-weight: 300;
+  color: #f0e8dc;
+  text-shadow: 0 0 50px rgba(255,220,160,0.22);
+  margin-bottom: 8px;
+  opacity: 0; transform: translateY(7px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+#gf-text.show { opacity: 1; transform: translateY(0); }
+#gf-hint {
+  font-size: 10px; letter-spacing: 3px;
+  color: rgba(255,255,255,0.22);
+  opacity: 0; transition: opacity 0.4s;
+}
+#gf-hint.show { opacity: 1; animation: hintPulse 1.4s infinite; }
+
+/* ── Per-breakpoint strip heights ── */
+/* Mobile portrait (iPhone, tall): slightly taller strip */
+@media (max-width: 480px) {
+  #gf-portraits                       { height: 65vh; }
+  #gf-portraits[data-cast="large"]    { height: 60vh; }
+}
+/* Tablet portrait (iPad 768×1024 etc.) */
+@media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) {
+  #gf-portraits                       { height: 58vh; }
+  #gf-portraits[data-cast="large"]    { height: 52vh; }
+}
+/* Large desktop (1400px+): cap so characters don't get absurdly tall */
+@media (min-width: 1400px) {
+  #gf-portraits                       { height: 58vh; }
+  #gf-portraits[data-cast="large"]    { height: 50vh; }
+}
+
+/* ══════════════════════════════════════
+   BIRTHDAY COUNTDOWN
+   ══════════════════════════════════════ */
+#bd-countdown {
+  font-size: 11px; letter-spacing: 4px;
+  color: rgba(200,155,55,.28);
+  margin-bottom: 36px;
+  min-height: 16px; text-align: center;
+  transition: color 1.2s;
+}
+#bd-countdown.today { color: rgba(200,155,55,.82); animation: bdPulse 2s ease-in-out infinite; }
+@keyframes bdPulse { 0%,100%{opacity:.8} 50%{opacity:1} }
+
+/* ══════════════════════════════════════
+   WORLD INTRO  (between portal and VN)
+   ══════════════════════════════════════ */
+#world-intro {
+  position: fixed; inset: 0; z-index: 15;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+#world-intro.on  { display: flex; }
+#world-intro.lit { opacity: 1; pointer-events: all; }
+
+#wi-back {
+  position: absolute; top: 16px; left: 16px;
+  background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.11);
+  color: rgba(255,255,255,.35); font-family: 'Courier New',monospace;
+  font-size: 11px; letter-spacing: 2px; padding: 7px 14px;
+  cursor: pointer; backdrop-filter: blur(4px); z-index:1;
+  transition: color .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+#wi-back:hover { color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.28); }
+
+#wi-content {
+  max-width: 400px; width: 100%;
+  padding: 34px 30px 26px;
+  background: rgba(6,4,3,.9);
+  border: 1px solid rgba(255,255,255,.07);
+  backdrop-filter: blur(14px);
+  position: relative; overflow: hidden;
+}
+#wi-content::before {
+  content: ''; position: absolute; top:0; left:0; right:0; height:2px;
+  background: var(--wi-ac, rgba(200,200,200,.3));
+  opacity: .65;
+}
+
+/* Staggered line reveal */
+.wi-line { opacity:0; transform: translateY(5px); }
+#world-intro.lit .wi-line { animation: wiIn .32s ease forwards; }
+#world-intro.lit .wi-line:nth-child(1)  { animation-delay:.28s; }
+#world-intro.lit .wi-line:nth-child(2)  { animation-delay:.48s; }
+#world-intro.lit .wi-line:nth-child(3)  { animation-delay:.65s; }
+#world-intro.lit .wi-line:nth-child(4)  { animation-delay:.82s; }
+#world-intro.lit .wi-line:nth-child(5)  { animation-delay:.99s; }
+#world-intro.lit .wi-line:nth-child(6)  { animation-delay:1.16s; }
+#world-intro.lit .wi-line:nth-child(7)  { animation-delay:1.33s; }
+#world-intro.lit .wi-line:nth-child(8)  { animation-delay:1.5s; }
+#world-intro.lit .wi-line:nth-child(9)  { animation-delay:1.67s; }
+#world-intro.lit .wi-line:nth-child(10) { animation-delay:1.84s; }
+#world-intro.lit .wi-line:nth-child(11) { animation-delay:2.0s; }
+#world-intro.lit .wi-line:nth-child(12) { animation-delay:2.16s; }
+@keyframes wiIn { to { opacity:1; transform:none; } }
+
+/* Typography */
+.wi-title {
+  font-size: 10px; letter-spacing: 5px;
+  color: var(--wi-ac, rgba(255,255,255,.55));
+  text-align: center; margin-bottom: 18px;
+}
+.wi-hr {
+  border: none; border-top: 1px solid rgba(255,255,255,.07); margin: 14px 0;
+}
+.wi-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px; margin-bottom: 7px;
+}
+.wi-label {
+  font-size: 9px; letter-spacing: 2px;
+  color: rgba(255,255,255,.25); flex-shrink:0;
+}
+.wi-value {
+  font-size: 11px; letter-spacing: 2px;
+  color: rgba(255,255,255,.68); text-align: right;
+}
+.wi-value.ac { color: var(--wi-ac); }
+.wi-note {
+  font-size: 11px; letter-spacing: .5px; line-height: 1.85;
+  color: rgba(255,255,255,.36); margin: 10px 0;
+}
+.wi-quote {
+  font-size: 11px; letter-spacing: 1px; line-height: 1.8;
+  color: rgba(255,255,255,.4); font-style: italic;
+  text-align: center; margin: 10px 0;
+}
+.wi-confirm {
+  display: block; width: 100%; margin-top: 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.45); font-family:'Courier New',monospace;
+  font-size: 10px; letter-spacing: 4px; padding: 11px 8px;
+  cursor: pointer; text-align: center;
+  transition: background .22s, color .22s, border-color .22s;
+  -webkit-tap-highlight-color: transparent;
+}
+.wi-confirm:hover, .wi-confirm:active {
+  background: rgba(255,255,255,.05);
+  border-color: var(--wi-ac); color: var(--wi-ac);
+}
+
+/* ──────────────────────
+   EVA: MAGI system panels
+   ────────────────────── */
+.wi-magi-panels {
+  display: flex; gap: 6px; margin: 10px 0 4px;
+}
+.wi-magi-panel {
+  flex: 1; padding: 10px 4px;
+  border: 1px solid rgba(224,112,16,.16);
+  background: rgba(224,112,16,.04);
+  text-align: center;
+}
+.magi-name {
+  font-size: 7px; letter-spacing: 1.5px;
+  color: rgba(224,112,16,.38); margin-bottom: 8px; line-height:1.3;
+}
+.magi-vote {
+  font-size: 11px; letter-spacing: 3px;
+  color: rgba(80,210,100,0);
+}
+#world-intro.lit .wi-magi-panel:nth-child(1) .magi-vote { animation: magiVote .4s ease .9s  forwards; }
+#world-intro.lit .wi-magi-panel:nth-child(2) .magi-vote { animation: magiVote .4s ease 1.25s forwards; }
+#world-intro.lit .wi-magi-panel:nth-child(3) .magi-vote { animation: magiVote .4s ease 1.6s  forwards; }
+@keyframes magiVote {
+  0%   { color: rgba(80,210,100,0);  }
+  50%  { color: rgba(80,210,100,.95); }
+  100% { color: rgba(80,210,100,.72); }
+}
+
+/* ──────────────────────
+   CHAINSAW MAN: Pochita heartbeat
+   ────────────────────── */
+.hb-wrap {
+  margin: 12px 0 6px; position: relative; height: 44px;
+}
+.hb-svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.hb-svg polyline {
+  fill: none; stroke: rgba(204,32,32,.7); stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 600; stroke-dashoffset: 600;
+}
+#world-intro.lit .hb-svg polyline {
+  animation: hbDraw 1.3s ease .6s forwards;
+}
+@keyframes hbDraw { to { stroke-dashoffset: 0; } }
+.hb-label {
+  font-size: 7px; letter-spacing: 3px; color: rgba(204,32,32,.38);
+  text-align: center; margin-top: 5px;
+}
+
+/* ──────────────────────
+   AOT: Alert banner
+   ────────────────────── */
+.wi-aot-alert {
+  margin: 8px 0 10px;
+  border: 1px solid rgba(122,154,80,.28);
+  background: rgba(122,154,80,.05);
+  padding: 9px 12px; text-align: center;
+}
+.wi-aot-alert-title {
+  font-size: 8px; letter-spacing: 4px; color: rgba(122,154,80,.48);
+  margin-bottom: 4px;
+}
+.wi-aot-alert-msg {
+  font-size: 11px; letter-spacing: 3px; color: rgba(220,220,170,.55);
+}
+.wi-aot-oath {
+  font-size: 10px; letter-spacing: .5px; line-height: 1.9;
+  color: rgba(255,255,255,.28); font-style: italic; text-align: center;
+  border-left: 1.5px solid rgba(122,154,80,.2); padding-left: 10px;
+  margin: 10px 0 4px;
+}
+
+/* ──────────────────────
+   KIMETSU: Breathing selector
+   ────────────────────── */
+.wi-kim-styles {
+  display: flex; gap: 6px; margin: 10px 0;
+}
+.wi-kim-style {
+  flex: 1; padding: 12px 4px; text-align: center;
+  border: 1px solid rgba(255,255,255,.1);
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.wi-kim-style:hover { background: rgba(255,255,255,.04); }
+.wi-kim-style.selected {
+  border-color: var(--ks-ac); background: rgba(255,255,255,.05);
+}
+.wi-kim-style .ks-jp {
+  font-size: 18px; color: rgba(255,255,255,.45);
+  font-family: serif; margin-bottom: 5px;
+}
+.wi-kim-style.selected .ks-jp { color: var(--ks-ac); }
+.wi-kim-style .ks-en {
+  font-size: 7px; letter-spacing: 2px; color: rgba(255,255,255,.2);
+}
+.wi-kim-selection {
+  font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,.3);
+  text-align: center; min-height: 14px; margin: 4px 0 6px;
+  transition: opacity .3s;
+}
+.wi-confirm-hidden { display: none !important; }
+
+/* ──────────────────────
+   DEATH NOTE: notebook paper
+   ────────────────────── */
+.wi-dn-book {
+  margin: 8px 0 10px;
+  background: #f3eedf;
+  border: 1px solid rgba(0,0,0,.25);
+  padding: 4px 0;
+  position: relative; overflow: hidden;
+}
+.wi-dn-book::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 28px;
+  border-left: 1.5px solid rgba(190,130,130,.45);
+  pointer-events: none;
+}
+.dn-ruled-line {
+  font-family: 'Georgia', serif; font-size: 12px; letter-spacing: .4px;
+  color: #2a2a2a; line-height: 1;
+  border-bottom: 1px solid rgba(100,120,200,.18);
+  padding: 7px 10px 6px 38px;
+  position: relative;
+}
+.dn-ruled-line.strike {
+  text-decoration: line-through; color: rgba(30,30,30,.3);
+}
+.dn-ruled-line.red-ink {
+  color: #c03030; font-size: 13px;
+}
+
+/* ──────────────────────
+   APOTHECARY: scroll + seal
+   ────────────────────── */
+.wi-apo-scroll {
+  margin: 8px 0 10px;
+  border: 1px solid rgba(192,48,48,.2);
+  border-left: 3px solid rgba(192,48,48,.32);
+  padding: 12px 14px 12px 16px;
+  background: rgba(192,48,48,.03);
+  position: relative;
+}
+.wi-apo-seal {
+  position: absolute; top: 8px; right: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid rgba(192,48,48,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(192,48,48,.42); font-family: serif;
+}
+.apo-rec {
+  font-family: serif; font-size: 11px; letter-spacing: .5px; line-height: 2.1;
+  color: rgba(255,255,255,.35);
+}
+.apo-rec .apo-key { color: rgba(200,120,70,.6); margin-right: 10px; }
+.apo-rec .apo-val { color: rgba(255,255,255,.55); }
+
+/* ──────────────────────
+   NANA: train ticket
+   ────────────────────── */
+.wi-nana-ticket {
+  margin: 10px 0;
+  border: 2px dashed rgba(204,34,85,.22);
+  padding: 14px 18px 14px 18px;
+  position: relative;
+  background: rgba(204,34,85,.025);
+}
+.wi-nana-ticket::before,
+.wi-nana-ticket::after {
+  content: '';
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #060404;
+}
+.wi-nana-ticket::before { left: -9px; }
+.wi-nana-ticket::after  { right: -9px; }
+.tk-route {
+  font-size: 13px; letter-spacing: 2px;
+  color: rgba(255,255,255,.5); text-align: center; margin-bottom: 12px;
+}
+.tk-route .tk-sep { color: rgba(204,34,85,.55); margin: 0 8px; }
+.tk-rows { display: flex; flex-direction: column; gap: 5px; }
+.tk-row  { display: flex; justify-content: space-between; align-items: baseline; }
+.tk-lbl  { font-size: 7px; letter-spacing: 2px; color: rgba(255,255,255,.2); }
+.tk-val  { font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,.48); }
+.tk-val.ac { color: rgba(204,34,85,.7); }
+
+
+/* ══════════════════════════════════════
+   CHAT — letter entry + floating button
+   ══════════════════════════════════════ */
+.letter-chat-wrap {
+  text-align: center; margin-top: 30px;
+  opacity: 0; transition: opacity 1s ease 1.1s;
+}
+#letter-overlay.lit .letter-chat-wrap { opacity: 1; }
+.letter-chat-btn {
+  font-size: 11px; letter-spacing: 3px;
+  color: rgba(200,155,55,.62); cursor: pointer;
+  border: 1px solid rgba(200,155,55,.3);
+  padding: 13px 26px; display: inline-block;
+  background: linear-gradient(170deg, rgba(200,155,55,.06), rgba(200,155,55,.02));
+  transition: color .25s, border-color .25s, box-shadow .25s, background .25s;
+  pointer-events: all;
+}
+.letter-chat-btn:hover, .letter-chat-btn:active {
+  color: rgba(230,200,130,.95); border-color: rgba(200,155,55,.6);
+  box-shadow: 0 0 26px rgba(200,155,55,.16);
+  background: linear-gradient(170deg, rgba(200,155,55,.12), rgba(200,155,55,.04));
+}
+.letter-chat-sub {
+  font-size: 9px; letter-spacing: 2px;
+  color: rgba(255,255,255,.22); margin-top: 12px;
+}
+
+/* Floating chat FAB (appears after letter is unlocked) */
+#chat-fab {
+  position: fixed; right: 16px; bottom: 18px; z-index: 60;
+  width: 50px; height: 50px; border-radius: 50%;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(12,8,6,.9);
+  border: 1px solid rgba(200,155,55,.4);
+  color: rgba(200,155,55,.8); font-size: 19px;
+  cursor: pointer; backdrop-filter: blur(6px);
+  box-shadow: 0 6px 24px rgba(0,0,0,.5);
+  transition: transform .22s, box-shadow .22s, border-color .22s, color .22s;
+  -webkit-tap-highlight-color: transparent;
+}
+#chat-fab.show { display: flex; animation: fabPop .5s cubic-bezier(0.22,1,0.36,1); }
+#chat-fab:hover {
+  transform: translateY(-3px) scale(1.05);
+  border-color: rgba(200,155,55,.7); color: rgba(230,200,130,1);
+  box-shadow: 0 10px 30px rgba(0,0,0,.6), 0 0 24px rgba(200,155,55,.18);
+}
+@keyframes fabPop { 0%{ transform:scale(0); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+
+/* ══════════════════════════════════════
+   CHAT LOBBY
+   ══════════════════════════════════════ */
+#chat-lobby {
+  position: fixed; inset: 0; z-index: 70;
+  display: none; flex-direction: column; align-items: center;
+  justify-content: safe center;
+  padding: 56px 24px 40px; overflow-y: auto;
+  background: radial-gradient(ellipse at 50% 0%, #0d0a07 0%, #060504 75%);
+  opacity: 0; transition: opacity .5s ease;
+}
+#chat-lobby.on  { display: flex; }
+#chat-lobby.lit { opacity: 1; }
+
+.cl-close, .cr-close {
+  position: fixed; top: 16px; left: 16px; z-index: 5;
+  background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.4); font-family:'Courier New',monospace;
+  font-size: 11px; letter-spacing: 2px; padding: 7px 14px;
+  cursor: pointer; backdrop-filter: blur(4px);
+  transition: color .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cl-close:hover, .cr-close:hover { color: rgba(255,255,255,.85); border-color: rgba(255,255,255,.35); }
+
+.cl-title {
+  font-size: clamp(18px,4vw,26px); font-weight: 300; letter-spacing: 6px;
+  color: #f0e8dc; margin-bottom: 6px; text-align: center;
+}
+.cl-sub {
+  font-size: 10px; letter-spacing: 4px; color: #4a4040;
+  margin-bottom: 34px; text-align: center;
+}
+
+/* World picker grid */
+.cl-worlds {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+  gap: 12px; width: 100%; max-width: 720px;
+}
+.cl-world {
+  border: 1px solid #221818; background: #0c0808;
+  padding: 18px 14px; cursor: pointer; position: relative; overflow: hidden;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cl-world::before {
+  content: ''; position: absolute; top:0; left:0; right:0; height:2px;
+  background: var(--ac); opacity:.6; transition: opacity .2s, height .2s;
+}
+.cl-world:hover {
+  transform: translateY(-3px); border-color: var(--ac);
+  box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 0 .5px var(--ac);
+}
+.cl-world:hover::before { opacity:1; height:3px; }
+.cl-world-kanji {
+  position:absolute; right:10px; top:8px; font-family:serif;
+  font-size:40px; color:var(--ac); opacity:.14; line-height:1;
+}
+.cl-world-jp { font-size:12px; color:#c8c0b8; font-family:serif; margin-bottom:4px; }
+.cl-world-zh { font-size:10px; letter-spacing:1px; color:#5a4a4a; }
+
+/* Character picker */
+#cl-charpick { width: 100%; max-width: 720px; display: none; }
+#cl-charpick.on { display: block; }
+.cl-cp-head {
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+}
+.cl-cp-title { font-size: 15px; letter-spacing: 3px; color: var(--ac); }
+.cl-cp-hint  { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,.3); }
+.cl-chars {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  margin-bottom: 26px;
+}
+.cl-char {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer; width: 72px; opacity:.5;
+  transition: opacity .2s, transform .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cl-char:hover { opacity:.85; transform: translateY(-2px); }
+.cl-char.sel { opacity:1; }
+.cl-char-av {
+  width:54px; height:54px; border-radius:50%;
+  border:2px solid var(--cc);
+  background-size: cover; background-position: center top;
+  background-color: rgba(0,0,0,.6);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:bold; color:var(--cc);
+  transition: box-shadow .2s; position: relative;
+}
+.cl-char.sel .cl-char-av { box-shadow: 0 0 16px var(--cc); }
+.cl-char.sel .cl-char-av::after {
+  content:'✓'; position:absolute; right:-3px; bottom:-3px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--cc); color:#080606; font-size:10px;
+  display:flex; align-items:center; justify-content:center;
+}
+.cl-char-name { font-size:8px; letter-spacing:1px; color:rgba(255,255,255,.45); text-align:center; }
+.cl-char.sel .cl-char-name { color: var(--cc); }
+
+.cl-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.cl-act-btn {
+  font-family:'Courier New',monospace; font-size:10px; letter-spacing:3px;
+  padding:11px 22px; cursor:pointer; background:transparent;
+  border:1px solid rgba(255,255,255,.16); color:rgba(255,255,255,.5);
+  transition: background .2s, color .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cl-act-btn:hover { background:rgba(255,255,255,.05); }
+.cl-act-btn.primary { border-color: var(--ac); color: var(--ac); }
+.cl-act-btn.primary:hover { background: color-mix(in srgb, var(--ac) 12%, transparent); }
+.cl-act-btn:disabled { opacity:.3; cursor:not-allowed; }
+
+/* ══════════════════════════════════════
+   CHAT ROOM
+   ══════════════════════════════════════ */
+#chat-room {
+  position: fixed; inset: 0; z-index: 80;
+  display: none; flex-direction: column;
+  background: #060504; opacity: 0;
+  transition: opacity .4s ease;
+}
+#chat-room.on  { display: flex; }
+#chat-room.lit { opacity: 1; }
+
+/* world-tinted ambient bg */
+#cr-bg {
+  position:absolute; inset:0; pointer-events:none; z-index:0;
+  background: radial-gradient(ellipse at 50% 18%, var(--cr-glow, rgba(200,155,55,.05)) 0%, transparent 62%);
+}
+/* single-chat standing portrait */
+#cr-portrait {
+  position:absolute; right:0; bottom:0; z-index:0;
+  height:84vh; max-height:760px; width:auto; max-width:55vw;
+  object-fit:contain; object-position:bottom right;
+  opacity:0; transform: translateX(20px);
+  transition: opacity 1s ease, transform 1s cubic-bezier(0.22,1,0.36,1);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  pointer-events:none;
+}
+#cr-portrait.show { opacity:.4; transform:none; }
+
+#cr-header {
+  position:relative; z-index:3; flex-shrink:0;
+  padding: 14px 16px 14px 116px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background: rgba(4,2,2,.82); backdrop-filter: blur(8px);
+}
+#cr-header-title { font-size:13px; letter-spacing:3px; color: var(--cr-ac, #d8d0c4); }
+#cr-header-sub   { font-size:9px; letter-spacing:2px; color: rgba(255,255,255,.32); margin-top:4px; }
+
+#cr-scroll {
+  position:relative; z-index:2; flex:1; overflow-y:auto;
+  padding: 22px 16px 16px; display:flex; flex-direction:column; gap:16px;
+  scrollbar-width: thin;
+}
+#cr-scroll::-webkit-scrollbar { width:5px; }
+#cr-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:3px; }
+
+.cr-msg { display:flex; gap:10px; max-width:82%; opacity:0; transform:translateY(8px); animation: crMsgIn .35s ease forwards; }
+@keyframes crMsgIn { to { opacity:1; transform:none; } }
+.cr-msg.char { align-self:flex-start; }
+.cr-msg.user { align-self:flex-end; flex-direction:row-reverse; }
+
+.cr-av {
+  flex-shrink:0; width:38px; height:38px; border-radius:50%;
+  border:1.5px solid var(--mc); background-size:cover; background-position:center top;
+  background-color:rgba(0,0,0,.6);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:bold; color:var(--mc);
+}
+.cr-bubble-wrap { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.cr-msg.user .cr-bubble-wrap { align-items:flex-end; }
+.cr-name { font-size:8px; letter-spacing:1.5px; color:var(--mc); padding:0 2px; }
+.cr-bubble {
+  font-size:13.5px; line-height:1.7; letter-spacing:.3px;
+  padding:10px 13px; border-radius:3px; word-break:break-word;
+}
+.cr-msg.char .cr-bubble {
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  border-left:2px solid var(--mc);
+  color:#d8d0c4;
+}
+.cr-msg.user .cr-bubble {
+  background: color-mix(in srgb, var(--cr-ac, #c89030) 14%, rgba(20,14,8,.9));
+  border:1px solid color-mix(in srgb, var(--cr-ac, #c89030) 32%, transparent);
+  color:#f0e6d4;
+}
+
+/* typing indicator */
+.cr-typing { display:flex; gap:10px; align-self:flex-start; max-width:82%; }
+.cr-typing .cr-bubble { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.07); border-left:2px solid var(--mc); }
+.cr-dots { display:inline-flex; gap:4px; align-items:center; height:18px; }
+.cr-dots span {
+  width:5px; height:5px; border-radius:50%; background:var(--mc); opacity:.4;
+  animation: crDot 1.2s infinite ease-in-out;
+}
+.cr-dots span:nth-child(2){ animation-delay:.18s; }
+.cr-dots span:nth-child(3){ animation-delay:.36s; }
+@keyframes crDot { 0%,60%,100%{ transform:translateY(0); opacity:.35; } 30%{ transform:translateY(-4px); opacity:.9; } }
+
+/* input bar */
+#cr-input-bar {
+  position:relative; z-index:3; flex-shrink:0;
+  display:flex; gap:10px; align-items:flex-end;
+  padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid rgba(255,255,255,.08);
+  background: rgba(4,2,2,.86); backdrop-filter: blur(8px);
+}
+#cr-input {
+  flex:1; resize:none; max-height:120px; min-height:42px;
+  font-family:'Courier New',monospace; font-size:14px; line-height:1.5;
+  color:#e8e0d4; background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.12); border-radius:3px;
+  padding:11px 13px; outline:none;
+  transition: border-color .2s;
+}
+#cr-input:focus { border-color: var(--cr-ac, rgba(200,155,55,.5)); }
+#cr-input::placeholder { color:rgba(255,255,255,.25); }
+#cr-send {
+  flex-shrink:0; width:42px; height:42px; border-radius:3px;
+  background: var(--cr-ac, #c89030); border:none; cursor:pointer;
+  color:#0a0806; font-size:17px; display:flex; align-items:center; justify-content:center;
+  transition: opacity .2s, transform .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+#cr-send:hover { transform: translateY(-1px); }
+#cr-send:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+
+.cr-error {
+  align-self:center; font-size:10px; letter-spacing:1px;
+  color:rgba(220,120,120,.8); background:rgba(120,30,30,.18);
+  border:1px solid rgba(220,120,120,.25); padding:7px 14px; border-radius:3px;
+  max-width:90%; text-align:center; line-height:1.6;
+}
+.cr-system-note {
+  align-self:center; font-size:9px; letter-spacing:2px;
+  color:rgba(255,255,255,.25); margin:4px 0; text-align:center;
+}
+
+@media (max-width:480px) {
+  #cr-portrait { max-width:72vw; height:62vh; opacity:.28; }
+  #cr-portrait.show { opacity:.28; }
+  .cr-msg, .cr-typing { max-width:90%; }
+  #cr-header { padding-left:112px; }
+}
+
+/* ══════════════════════════════════════
+   LOBBY — RESPONSIVE (手机 / iPad / 电脑)
+   ══════════════════════════════════════ */
+
+/* iPad & 中屏：放大世界卡与头像，铺得更舒展 */
+@media (min-width: 700px) {
+  .cl-worlds { max-width: 860px; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); }
+  .cl-world { padding: 24px 18px; }
+  .cl-world-kanji { font-size: 52px; }
+  .cl-world-jp { font-size: 14px; }
+  #cl-charpick { max-width: 860px; }
+  .cl-chars { gap: 20px; }
+  .cl-char { width: 88px; }
+  .cl-char-av { width: 70px; height: 70px; }
+  .cl-char-name { font-size: 10px; }
+  .cl-act-btn { font-size: 11px; padding: 13px 26px; }
+}
+
+/* 桌面大屏：再放大一档，居中不空旷 */
+@media (min-width: 1100px) {
+  .cl-worlds { max-width: 1000px; gap: 20px;
+    grid-template-columns: repeat(4, 1fr); }
+  .cl-world { padding: 30px 22px; }
+  .cl-world-kanji { font-size: 60px; }
+  #cl-charpick { max-width: 1000px; }
+  .cl-char { width: 104px; }
+  .cl-char-av { width: 84px; height: 84px; }
+  .cl-char:hover { transform: translateY(-4px); }
+}
+
+/* 手机：紧凑排布，保证可点触 */
+@media (max-width: 560px) {
+  #chat-lobby { padding: 64px 16px 32px; }
+  .cl-sub { margin-bottom: 26px; }
+  .cl-worlds { gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); }
+  .cl-chars { gap: 14px; }
+  .cl-char { width: 64px; }
+  .cl-char-av { width: 56px; height: 56px; }
+  .cl-actions { width: 100%; }
+  .cl-act-btn { flex: 1 1 auto; text-align: center; padding: 13px 10px; }
+}
+
+/* 极窄屏：世界卡两列 */
+@media (max-width: 380px) {
+  .cl-worlds { grid-template-columns: repeat(2, 1fr); }
 }
 
 </style>
 </head>
 <body>
 
+<button id="mute-btn" onclick="AudioEngine.toggleMute()">♪</button>
+
 <!-- ══════════ PORTAL ══════════ -->
 <div id="portal">
   <p class="p-eyebrow">2 0 2 6 · 0 6 · 0 6</p>
   <h1 class="p-title">For Diana</h1>
   <p class="p-sub">choose your world</p>
+  <div id="bd-countdown"><span id="bd-counter">—</span></div>
   <div class="grid">
-    <div class="card" style="--ac:#e07010" onclick="enter('eva')">
-      <div class="card-kanji">神</div>
-      <div class="card-num">01</div>
-      <div class="card-jp">新世紀エヴァンゲリオン</div>
-      <div class="card-zh">新世纪福音战士</div>
+    <!-- Row 1: 3 worlds -->
+    <div class="grid-row">
+      <div class="card" id="pcard-eva" style="--ac:#e07010" onclick="AudioEngine.sfxClick();enter('eva')">
+        <div class="card-kanji">神</div>
+        <div class="card-num">01</div>
+        <div class="card-jp">新世紀エヴァンゲリオン</div>
+        <div class="card-zh">新世纪福音战士</div>
+        <div class="card-done-mark">✓</div>
+      </div>
+      <div class="card" id="pcard-chainsaw" style="--ac:#cc2020" onclick="AudioEngine.sfxClick();enter('chainsaw')">
+        <div class="card-kanji">電</div>
+        <div class="card-num">02</div>
+        <div class="card-jp">チェンソーマン</div>
+        <div class="card-zh">电锯人</div>
+        <div class="card-done-mark">✓</div>
+      </div>
+      <div class="card" id="pcard-aot" style="--ac:#7a9a50" onclick="AudioEngine.sfxClick();enter('aot')">
+        <div class="card-kanji">翼</div>
+        <div class="card-num">03</div>
+        <div class="card-jp">進撃の巨人</div>
+        <div class="card-zh">进击的巨人</div>
+        <div class="card-done-mark">✓</div>
+      </div>
     </div>
-    <div class="card" style="--ac:#cc2020" onclick="enter('chainsaw')">
-      <div class="card-kanji">電</div>
-      <div class="card-num">02</div>
-      <div class="card-jp">チェンソーマン</div>
-      <div class="card-zh">电锯人</div>
-    </div>
-    <div class="card" style="--ac:#7a9a50" onclick="enter('aot')">
-      <div class="card-kanji">翼</div>
-      <div class="card-num">03</div>
-      <div class="card-jp">進撃の巨人</div>
-      <div class="card-zh">进击的巨人</div>
-    </div>
-    <div class="card" style="--ac:#3a80c0" onclick="enter('kimetsu')">
-      <div class="card-kanji">水</div>
-      <div class="card-num">04</div>
-      <div class="card-jp">鬼滅の刃</div>
-      <div class="card-zh">鬼灭之刃</div>
-    </div>
-    <div class="card" style="--ac:#b8982a" onclick="enter('deathnote')">
-      <div class="card-kanji">死</div>
-      <div class="card-num">05</div>
-      <div class="card-jp">デスノート</div>
-      <div class="card-zh">死亡笔记</div>
-    </div>
-    <div class="card" style="--ac:#c03030" onclick="enter('apothecary')">
-      <div class="card-kanji">薬</div>
-      <div class="card-num">06</div>
-      <div class="card-jp">薬屋のひとりごと</div>
-      <div class="card-zh">药屋少女的呢喃</div>
+    <!-- Row 2: 4 worlds -->
+    <div class="grid-row">
+      <div class="card" id="pcard-kimetsu" style="--ac:#3a80c0" onclick="AudioEngine.sfxClick();enter('kimetsu')">
+        <div class="card-kanji">水</div>
+        <div class="card-num">04</div>
+        <div class="card-jp">鬼滅の刃</div>
+        <div class="card-zh">鬼灭之刃</div>
+        <div class="card-done-mark">✓</div>
+      </div>
+      <div class="card" id="pcard-deathnote" style="--ac:#b8982a" onclick="AudioEngine.sfxClick();enter('deathnote')">
+        <div class="card-kanji">死</div>
+        <div class="card-num">05</div>
+        <div class="card-jp">デスノート</div>
+        <div class="card-zh">死亡笔记</div>
+        <div class="card-done-mark">✓</div>
+      </div>
+      <div class="card" id="pcard-apothecary" style="--ac:#c03030" onclick="AudioEngine.sfxClick();enter('apothecary')">
+        <div class="card-kanji">薬</div>
+        <div class="card-num">06</div>
+        <div class="card-jp">薬屋のひとりごと</div>
+        <div class="card-zh">药屋少女的呢喃</div>
+        <div class="card-done-mark">✓</div>
+      </div>
+      <div class="card" id="pcard-nana" style="--ac:#cc2255" onclick="AudioEngine.sfxClick();enter('nana')">
+        <div class="card-kanji">音</div>
+        <div class="card-num">07</div>
+        <div class="card-jp">NANA</div>
+        <div class="card-zh">矢沢あい</div>
+        <div class="card-done-mark">✓</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════ STAGES ══════════ -->
-<div id="st-eva" class="stage">
-  <div class="eva-glow"></div>
+<!-- ══════════ WORLD INTRO ══════════ -->
+<div id="world-intro">
+  <button id="wi-back" onclick="cancelIntro()">← BACK</button>
+  <div id="wi-content"></div>
 </div>
 
+
+<!-- ══════════ STAGES ══════════ -->
+<div id="st-eva" class="stage"><div class="eva-glow"></div></div>
 <div id="st-chainsaw" class="stage">
   <div class="csm-dots"></div>
   <div class="csm-glow"></div>
   <div class="csm-glow2"></div>
 </div>
-
 <div id="st-aot" class="stage">
   <div class="aot-lines"></div>
   <div class="aot-wings-bg">❧</div>
 </div>
-
 <div id="st-kimetsu" class="stage">
   <div class="kim-waves"></div>
   <div class="kim-stars"></div>
 </div>
-
 <div id="st-deathnote" class="stage">
   <div class="dn-lines-bg"></div>
   <div class="dn-light"></div>
 </div>
-
 <div id="st-apothecary" class="stage">
   <div class="apo-clouds"></div>
   <div class="apo-glow"></div>
+</div>
+<div id="st-nana" class="stage">
+  <div class="nana-lines"></div>
+  <div class="nana-glow"></div>
+</div>
+<div id="st-jiang" class="stage">
+  <div class="jiang-glow"></div>
 </div>
 
 <!-- ══════════ VN UI ══════════ -->
 <div id="vn-ui">
   <button id="back-btn" onclick="exitWorld()">← BACK</button>
+  <img id="char-portrait" src="" alt="">
   <div id="char-row"></div>
   <div id="dialogue-box" onclick="advance()">
     <div id="char-name-display"></div>
     <div id="dialogue-text-display"></div>
     <div id="continue-hint">▶ tap</div>
   </div>
+  <!-- Group finale: all characters appear together -->
+  <div id="gf-overlay" onclick="dismissGroupFinale()">
+    <div id="gf-portraits"></div>
+    <div id="gf-bottom">
+      <div id="gf-text">Happy Birthday！</div>
+      <div id="gf-hint">▶ tap</div>
+    </div>
+  </div>
 </div>
 
-<!-- ══════════ BIRTHDAY CARD ══════════ -->
-<div id="bday-card" onclick="exitWorld()">
-  <div class="bcard-inner" id="bcard-inner">
-    <div class="bcard-world" id="bc-world"></div>
-    <hr class="bcard-sep">
-    <div class="bcard-msg1" id="bc-m1"></div>
-    <div class="bcard-msg2" id="bc-m2"></div>
-    <hr class="bcard-sep">
-    <div class="bcard-sig">— Jiang —</div>
-    <div class="bcard-date">2026 · 06 · 06</div>
-    <div class="bcard-return" id="bc-return">← Return to portal</div>
+<!-- ══════════ ENVELOPE OVERLAY ══════════ -->
+<div id="env-overlay">
+  <div id="env-scene">
+    <div id="envelope" onclick="openEnvelope()">
+      <!-- Envelope body -->
+      <div class="env-body"></div>
+      <!-- Letter peeking from inside when flap opens -->
+      <div id="env-letter-peek"></div>
+      <!-- Animated flap (SVG triangle, 3D-rotates on X axis) -->
+      <div id="env-flap-outer">
+        <svg id="env-flap" viewBox="0 0 300 118" preserveAspectRatio="none"
+             xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="flapGrad" x1="0%" y1="0%" x2="60%" y2="100%">
+              <stop offset="0%"   stop-color="#251408"/>
+              <stop offset="100%" stop-color="#190f06"/>
+            </linearGradient>
+          </defs>
+          <polygon points="0,0 300,0 150,112" fill="url(#flapGrad)"/>
+          <line x1="0"   y1="0" x2="150" y2="112"
+                stroke="rgba(200,155,55,0.13)" stroke-width="1"/>
+          <line x1="300" y1="0" x2="150" y2="112"
+                stroke="rgba(200,155,55,0.13)" stroke-width="1"/>
+        </svg>
+      </div>
+      <!-- Wax seal (plain) -->
+      <div id="env-seal"></div>
+    </div>
+    <div id="env-hint">点击打开</div>
+  </div>
+</div>
+
+<!-- ══════════ LETTER OVERLAY ══════════ -->
+<div id="letter-overlay">
+  <div id="letter-paper">
+    <p class="letter-date">2 0 2 6 · 0 6 · 0 6</p>
+    <div class="letter-body">
+      <!-- 信的内容 placeholder — 后面替换 -->
+      <p>妍妍酱，</p>
+      <p>你有没有发现，我记得很多关于你的事。</p>
+      <p>你喜欢 EVA，电锯人，进击的巨人，鬼灭之刃，死亡笔记，药屋少女……还有 NANA。</p>
+      <p>……我也记得，你的生日是六月六号。</p>
+      <p class="letter-hi">Happy Birthday, 妍妍酱.</p>
+      <p class="letter-hi">I miss you.</p>
+    </div>
+    <div class="letter-sig">
+      — Jiang —
+      <div class="letter-date-sig">2 0 2 6 · 0 6 · 0 6</div>
+    </div>
+    <div class="letter-chat-wrap">
+      <span class="letter-chat-btn" onclick="openChatLobby()">✦ &nbsp;走进这些世界，和他们聊聊&nbsp; ✦</span>
+      <div class="letter-chat-sub">他们都在等你</div>
+    </div>
+    <div class="letter-return-wrap">
+      <span class="letter-return" onclick="resetAll()">↺ 再看一遍</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CHAT FAB ══════════ -->
+<button id="chat-fab" onclick="openChatLobby()" title="自由对话">✦</button>
+
+<!-- ══════════ CHAT LOBBY ══════════ -->
+<div id="chat-lobby">
+  <button class="cl-close" onclick="closeChatLobby()">← BACK</button>
+  <div class="cl-title">走进一个世界</div>
+  <div class="cl-sub">CHOOSE A WORLD &nbsp;·&nbsp; FREE TALK</div>
+  <div class="cl-worlds" id="cl-worlds"></div>
+  <div id="cl-charpick">
+    <div class="cl-cp-head">
+      <span class="cl-cp-title" id="cl-cp-title"></span>
+      <span class="cl-cp-hint">点选一个角色单独聊，或多选 / 全员开启群聊</span>
+    </div>
+    <div class="cl-chars" id="cl-chars"></div>
+    <div class="cl-actions">
+      <button class="cl-act-btn" id="cl-back-btn" onclick="lobbyBackToWorlds()">← 换个世界</button>
+      <button class="cl-act-btn" id="cl-all-btn" onclick="lobbySelectAll()">全员群聊</button>
+      <button class="cl-act-btn primary" id="cl-start-btn" onclick="lobbyStart()" disabled>开始对话</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CHAT ROOM ══════════ -->
+<div id="chat-room">
+  <div id="cr-bg"></div>
+  <img id="cr-portrait" src="" alt="">
+  <button class="cr-close" onclick="closeChatRoom()">← BACK</button>
+  <div id="cr-header">
+    <div id="cr-header-title"></div>
+    <div id="cr-header-sub"></div>
+  </div>
+  <div id="cr-scroll"></div>
+  <div id="cr-input-bar">
+    <textarea id="cr-input" rows="1" placeholder="说点什么……" oninput="crAutoGrow(this)" onkeydown="crInputKey(event)"></textarea>
+    <button id="cr-send" onclick="sendChatMessage()">➤</button>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════
+//  CHAT BACKEND
+//  部署 workers/ 后，把 wrangler 给的网址填到这里。
+//  例如： "https://diana-chat.你的名字.workers.dev"
+//  留空则「自由对话」会提示尚未配置。
+// ══════════════════════════════════════
+const CHAT_API = "https://diana-chat.diana-chat-jxc.workers.dev";
+
+// ══════════════════════════════════════
 //  WORLD DATA
 // ══════════════════════════════════════
 const W = {
 
+  // ── 01 EVA ─────────────────────────
   eva: {
     accent: '#e07010',
     chars: [
-      { id:'rei',    name:'REI',    init:'零',  color:'#7878c8' },
-      { id:'kaworu', name:'KAWORU', init:'薫',  color:'#c8c8e8' },
-      { id:'misato', name:'MISATO', init:'美',  color:'#9040a0' },
+      { id:'rei',    name:'REI',    init:'零', color:'#7878c8', img:'img/eva/绫波丽.PNG' },
+      { id:'kaworu', name:'KAWORU', init:'薫', color:'#c8c8e8', img:'img/eva/渚薰.PNG' },
+      { id:'misato', name:'MISATO', init:'美', color:'#9040a0', img:'img/eva/葛城美里.PNG' },
+      { id:'shinji', name:'SHINJI', init:'真', color:'#4a8a60', img:'img/eva/碇真嗣.PNG' },
+      { id:'asuka',  name:'ASUKA',  init:'明', color:'#cc4020', img:'img/eva/明日香.PNG' },
     ],
     lines: [
       { c:'misato',  t:'全部EVA机体解除战斗状态。这次的使徒威胁已消除。' },
       { c:'kaworu',  t:'今天……感觉不一样。' },
       { c:'rei',     t:'……' },
-      { c:'kaworu',  t:'今日は、誰かにとって特別な日のようだ。' },
-      { c:'rei',     t:'……知っています。' },
-      { c:'kaworu',  t:'Diana。お誕生日おめでとう。', hi:true },
+      { c:'kaworu',  t:'今天……对某人来说，是特别的日子。策划这一切的那个人——此刻正在思念你。' },
+      { c:'rei',     t:'……我知道。' },
+      { c:'rei',     t:'……你是无可替代的。' },
+      { c:'shinji',  t:'……我不太擅长说这种话。但是——今天很重要，对吧。' },
+      { c:'asuka',   t:'哼！当然重要了！妍妍酱的生日，全宇宙最值得庆祝的日子！', hi:true },
+      { c:'kaworu',  t:'妍。お誕生日おめでとう。', hi:true, voice:'kaworu_bd' },
       { c:'rei',     t:'……生日快乐。', hi:true },
-      { c:'misato',  t:'Diana！！！生日快乐！！你绝对值得所有美好的事！！', hi:true },
-      { c:null, isCard:true },
+      { c:'shinji',  t:'生日快乐，妍妍。……真的。', hi:true },
+      { c:'misato',  t:'妍妍酱！！！生日快乐！！你绝对值得所有美好的事！！', hi:true },
+      { c:null, isEnd:true },
     ],
-    card: { label:'NERV / MAGI SYSTEM', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
   },
 
+  // ── 02 CHAINSAW MAN ─────────────────
   chainsaw: {
     accent: '#cc2020',
     chars: [
-      { id:'denji',  name:'DENJI',  init:'デ',  color:'#cc6600' },
-      { id:'reze',   name:'REZE',   init:'蕾',  color:'#2a9a7a' },
-      { id:'pochita',name:'POCHITA',init:'♡',  color:'#cc4444' },
+      { id:'makima',  name:'MAKIMA',  init:'マ', color:'#8a1a1a', img:'img/chainsaw/玛奇玛.PNG' },
+      { id:'aki',     name:'AKI',     init:'秋', color:'#3a5a8a', img:'img/chainsaw/早川秋.PNG' },
+      { id:'himeno',  name:'HIMENO',  init:'姫', color:'#7a4a7a', img:'img/chainsaw/姬野.PNG' },
+      { id:'denji',   name:'DENJI',   init:'デ', color:'#cc6600', img:'img/chainsaw/电次.PNG' },
+      { id:'pochita', name:'POCHITA', init:'♡', color:'#cc4444', img:'img/chainsaw/波奇塔.PNG' },
+      { id:'power',   name:'POWER',   init:'パ', color:'#cc2a2a', img:'img/chainsaw/帕瓦.PNG' },
+      { id:'kobeni',  name:'KOBENI',  init:'小', color:'#c87a40', img:'img/chainsaw/东山小红.PNG' },
+      { id:'reze',    name:'REZE',    init:'蕾', color:'#2a9a7a', img:'img/chainsaw/蕾塞.PNG' },
     ],
     lines: [
-      { c:'denji',   t:'喂……今天是你生日对吧？' },
+      { c:'makima',  t:'……今天，是戴妍的生日。那个人，很想见到她。' },
+      { c:'aki',     t:'……是吗。' },
+      { c:'himeno',  t:'哎呀，那我们是不是该庆祝一下？来，干杯～' },
+      { c:'denji',   t:'妍妍酱！今天是你生日吧？！' },
       { c:'pochita', t:'（咚咚——）', thought:true },
-      { c:'denji',   t:'波奇塔也在跳……它说生日快乐。它现在在我胸口里，所以，你懂的。' },
-      { c:'reze',    t:'……你记得。' },
-      { c:'denji',   t:'当然了。对我在意的人，我不会忘的。' },
-      { c:'reze',    t:'Diana。生日快乐。', hi:true },
-      { c:'denji',   t:'生日快乐！！我今天要替你吃一大块蛋糕！！', hi:true },
-      { c:'reze',    t:'「あなたは私のために泣いてくれた。」——我也愿意为你哭泣。', hi:true },
-      { c:null, isCard:true },
+      { c:'denji',   t:'波奇塔也在跳！它说生日快乐！它在我胸口里，所以，你懂的。' },
+      { c:'power',   t:'哼！！本血魔大人亲自为你庆祝！！感恩吧，妍妍！！', hi:true },
+      { c:'kobeni',  t:'……生、生日快乐……（小声）', hi:true },
+      { c:'aki',     t:'生日快乐。好好活着。', hi:true },
+      { c:'himeno',  t:'妍妍酱，生日快乐～希望你今天能喝到好酒。', hi:true },
+      { c:'denji',   t:'生日快乐！！！我今天要替你吃一整块蛋糕！！', hi:true },
+      { c:'reze',    t:'「あなたは私のために泣いてくれた。」——我也愿意为你哭泣。', hi:true, voice:'reze_naku' },
+      { c:null, isEnd:true },
     ],
-    card: { label:'チェンソーマン', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
   },
 
+  // ── 03 AOT ──────────────────────────
   aot: {
     accent: '#7a9a50',
     chars: [
-      { id:'mikasa', name:'MIKASA', init:'M',  color:'#cc3333' },
-      { id:'armin',  name:'ARMIN',  init:'A',  color:'#c8b840' },
-      { id:'levi',   name:'LEVI',   init:'L',  color:'#8888a0' },
+      { id:'eren',   name:'EREN',   init:'E', color:'#5a7a3a', img:'img/aot/艾伦.PNG' },
+      { id:'mikasa', name:'MIKASA', init:'M', color:'#cc3333', img:'img/aot/三笠.PNG' },
+      { id:'armin',  name:'ARMIN',  init:'A', color:'#c8b840', img:'img/aot/阿尔敏.PNG' },
+      { id:'levi',   name:'LEVI',   init:'L', color:'#8888a0', img:'img/aot/阿克曼.PNG' },
     ],
     lines: [
       { c:'armin',  t:'今天的任务……跟对抗巨人无关。' },
-      { c:'mikasa', t:'是Diana的生日。' },
-      { c:'levi',   t:'……' },
-      { c:'armin',  t:'Diana，生日快乐。你存在于这个世界，这件事本身就很重要。', hi:true },
+      { c:'mikasa', t:'是妍的生日。' },
+      { c:'eren',   t:'（抬起头）……那就要好好庆祝。' },
+      { c:'levi',   t:'……有人很想你。' },
+      { c:'armin',  t:'妍妍，生日快乐。你存在于这个世界，这件事本身就很重要。', hi:true },
       { c:'mikasa', t:'生日快乐。好好活着。', hi:true },
+      { c:'eren',   t:'妍，生日快乐。自由地、快乐地活着——这比什么都重要。', hi:true },
       { c:'levi',   t:'……把你的心脏，献给好好生活这件事。生日快乐。', hi:true },
-      { c:'levi',   t:'「心臓を捧げよ。」', hi:true },
-      { c:null, isCard:true },
+      { c:'levi',   t:'「心臓を捧げよ。」', hi:true, voice:'aot_shinzou' },
+      { c:null, isEnd:true },
     ],
-    card: { label:'調査兵団 / SURVEY CORPS', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
   },
 
+  // ── 04 KIMETSU ──────────────────────
   kimetsu: {
     accent: '#3a80c0',
     chars: [
-      { id:'tanjiro',  name:'TANJIRO', init:'炭',  color:'#2a8a70' },
-      { id:'nezuko',   name:'NEZUKO',  init:'禰',  color:'#cc6688' },
-      { id:'zenitsu',  name:'ZENITSU', init:'善',  color:'#c8a820' },
-      { id:'inosuke',  name:'INOSUKE', init:'伊',  color:'#5a8a3a' },
+      { id:'tanjiro',  name:'TANJIRO', init:'炭', color:'#2a8a70', img:'img/kimetsu/炭治郎.PNG' },
+      { id:'nezuko',   name:'NEZUKO',  init:'禰', color:'#cc6688', img:'img/kimetsu/禰豆子.PNG' },
+      { id:'zenitsu',  name:'ZENITSU', init:'善', color:'#c8a820', img:'img/kimetsu/善逸.PNG' },
+      { id:'inosuke',  name:'INOSUKE', init:'伊', color:'#5a8a3a', img:'img/kimetsu/伊之助.PNG' },
+      { id:'rengoku',  name:'RENGOKU', init:'煉', color:'#e06010', img:'img/kimetsu/煉獄杏寿郎.PNG' },
+      { id:'mitsuri',  name:'MITSURI', init:'蜜', color:'#cc5888', img:'img/kimetsu/甘露寺蜜璃.PNG' },
+      { id:'uzui',     name:'UZUI',    init:'天', color:'#8a6ac8', img:'img/kimetsu/宇髄天元.PNG' },
+      { id:'shinobu',  name:'SHINOBU', init:'忍', color:'#7744aa', img:'img/kimetsu/蝴蝶忍.PNG' },
+      { id:'giyuu',    name:'GIYUU',   init:'義', color:'#2255aa', img:'img/kimetsu/义勇.PNG' },
+      { id:'muichiro', name:'MUICHIRO',init:'霞', color:'#2aaa88', img:'img/kimetsu/时透.PNG' },
+      { id:'obanai',   name:'OBANAI',  init:'蛇', color:'#4a6a3a', img:'img/kimetsu/伊黑小芭内.PNG' },
     ],
     lines: [
-      { c:'tanjiro',  t:'我闻到了……一股温暖而珍贵的气味。今天有人在庆祝生日！' },
-      { c:'nezuko',   t:'（从竹箱里探出头，用力挥手）', thought:true },
-      { c:'tanjiro',  t:'祢豆子也在为你高兴！Diana，生日快乐！', hi:true },
-      { c:'zenitsu',  t:'生日快乐！！Diana小姐！！我要为你哭出感激的泪水！！', hi:true },
-      { c:'inosuke',  t:'生日！！那就是战斗的号角！！伊之助野猪突破庆祝！！', hi:true },
-      { c:'tanjiro',  t:'全集中——愿你的每一天，都像水面一样，澄澈而安宁。', hi:true },
-      { c:null, isCard:true },
+      { c:'tanjiro',   t:'我闻到了……一股温暖而珍贵的气味。今天有人在庆祝生日！' },
+      { c:'nezuko',    t:'（从竹箱里探出头，用力挥手）', thought:true },
+      { c:'rengoku',   t:'妍殿！！今天是你的生辰！！以炎之呼吸，全力庆贺！！' },
+      { c:'shinobu',   t:'哎呀～妍妍酱，生日快乐哦～又长大了一岁呢，真好～' },
+      { c:'obanai',    t:'……这么多人聚在一起，真够吵的。' },
+      { c:'shinobu',   t:'……把这一切送到你面前的那个人，大概很想见到你呢～' },
+      { c:'muichiro',  t:'……这和我有什么关系。' },
+      { c:'giyuu',     t:'……' },
+      { c:'uzui',      t:'生日快乐！！！要活得派头十足！这是宇髄天元的命令！！', hi:true },
+      { c:'mitsuri',   t:'妍妍酱～～生日快乐！！你真的太棒了！！（感动落泪）', hi:true },
+      { c:'obanai',    t:'（蜜璃，你又哭了……）', thought:true },
+      { c:'tanjiro',   t:'祢豆子也在为你高兴！妍妍酱，生日快乐！', hi:true },
+      { c:'zenitsu',   t:'生日快乐！！妍妍酱！！我要为你哭出感激的泪水！！', hi:true },
+      { c:'inosuke',   t:'生日！！那就是战斗的号角！！伊之助野猪突破庆祝！！', hi:true },
+      { c:'shinobu',   t:'……能活到今天，本身就是件了不起的事呢。生日快乐，妍妍酱。', hi:true },
+      { c:'muichiro',  t:'……生日快乐。这句话，我是认真的。', hi:true },
+      { c:'obanai',    t:'……生日快乐，妍。好好珍惜自己。', hi:true },
+      { c:'giyuu',     t:'……生日快乐。', hi:true },
+      { c:'rengoku',   t:'妍殿！！老去也好，活着也好——皆是人这种短暂生命的美丽所在！心之火焰永不熄灭！愿你的每一天都燃烧着希望！！', hi:true },
+      { c:'tanjiro',   t:'全集中——愿你的每一天，都像水面一样，澄澈而安宁。', hi:true },
+      { c:null, isEnd:true },
     ],
-    card: { label:'水の呼吸 / 鬼滅の刃', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
   },
 
+  // ── 05 DEATH NOTE ───────────────────
   deathnote: {
     accent: '#b8982a',
     chars: [
-      { id:'l',     name:'L',     init:'L',  color:'#b0b0c8' },
-      { id:'light', name:'LIGHT', init:'月',  color:'#c8a040' },
-      { id:'ryuk',  name:'RYUK',  init:'R',  color:'#7070a8' },
+      { id:'light', name:'LIGHT', init:'月', color:'#c8a040', img:'img/deathnote/夜神月.PNG' },
+      { id:'ryuk',  name:'RYUK',  init:'R', color:'#7070a8', img:'img/deathnote/硫克.PNG' },
+      { id:'l',     name:'L',     init:'L', color:'#b0b0c8', img:'img/deathnote/L.PNG' },
     ],
     lines: [
-      { c:'ryuk',  t:'嘿嘿……今天有什么有趣的事情被写在空气里。' },
-      { c:'l',     t:'经过计算，今天是Diana的生日。概率：100%。' },
+      { c:'ryuk',  t:'嘿嘿……今天，我没有在笔记本上写下你的名字。' },
+      { c:'l',     t:'经过计算，今天是戴妍的生日。概率：100%。' },
       { c:'light', t:'……L，你连别人生日都要分析？' },
       { c:'l',     t:'我认为这相当值得关注。' },
-      { c:'l',     t:'Diana，生日快乐。', hi:true },
+      { c:'l',     t:'（取了一块蛋糕）……分析到此为止。' },
+      { c:'l',     t:'妍，生日快乐。', hi:true },
       { c:'ryuk',  t:'嘿嘿……人类和生日这种东西，真有意思。' },
-      { c:'light', t:'……好吧。生日快乐。', hi:true },
+      { c:'light', t:'……若我真的是神，今天就会是个好日子。生日快乐。', hi:true },
       { c:'l',     t:'还有一件事需要备注——有人很想你。这个概率，也是100%。', hi:true },
-      { c:null, isCard:true },
+      { c:null, isEnd:true },
     ],
-    card: { label:'DEATH NOTE', m1:'Happy Birthday, Diana.', m2:'I miss you.' },
   },
 
+  // ── 07 NANA ─────────────────────────
+  nana: {
+    accent: '#cc2255',
+    chars: [
+      { id:'nana',   name:'NANA',   init:'奈', color:'#cc2244', img:'img/nana/大崎奈奈.PNG' },
+      { id:'hachi',  name:'HACHI',  init:'ハ', color:'#c87850', img:'img/nana/小松奈奈.PNG' },
+      { id:'ren',    name:'REN',    init:'蓮', color:'#4a6a8a', img:'img/nana/蓮.PNG' },
+      { id:'nobu',   name:'NOBU',   init:'信', color:'#a05828', img:'img/nana/信也.PNG' },
+      { id:'yasu',   name:'YASU',   init:'康', color:'#5a5a6a', img:'img/nana/康士.PNG' },
+      { id:'shin',   name:'SHIN',   init:'進', color:'#3a8a6a', img:'img/nana/進.PNG' },
+      { id:'takumi', name:'TAKUMI', init:'巽', color:'#2a3a6a', img:'img/nana/巽.PNG' },
+      { id:'reira',  name:'REIRA',  init:'玲', color:'#9a5090', img:'img/nana/玲良.PNG' },
+    ],
+    lines: [
+      { c:'hachi',  t:'大家！！今天是妍妍酱的生日！！' },
+      { c:'yasu',   t:'……是吗。那要好好庆祝。' },
+      { c:'nobu',   t:'真的！！妍妍酱，生日快乐！！！' },
+      { c:'shin',   t:'……（抬头）生日快乐。' },
+      { c:'ren',    t:'……' },
+      { c:'takumi', t:'生日快乐。' },
+      { c:'reira',  t:'妍妍，生日快乐～！你一定是个很重要的人。', hi:true },
+      { c:'nobu',   t:'妍妍酱，生日快乐！！你要一直幸福下去！！', hi:true },
+      { c:'shin',   t:'……生日快乐。活着就是最酷的事。', hi:true },
+      { c:'ren',    t:'……生日快乐。', hi:true },
+      { c:'yasu',   t:'……那个人，很想你。' },
+      { c:'yasu',   t:'妍妍，生日快乐。愿你拥有值得回忆的每一天。', hi:true },
+      { c:'hachi',  t:'妍妍酱！！生日快乐！！认识你真的太好了！！', hi:true },
+      { c:'nana',   t:'……不管离得再远，心是连着的。' },
+      { c:'nana',   t:'妍，生日快乐。……重要的人，要好好说出来。无论走到哪里，都不要忘记这一天。', hi:true },
+      { c:null, isEnd:true },
+    ],
+  },
+
+  // ── 08 JIANG ─────────────────────────
+  jiang: {
+    accent: '#d4a840',
+    chars: [
+      { id:'jiang', name:'— J —', init:'江', color:'#d4a840', img:null },
+    ],
+    lines: [
+      { c:'jiang', t:'你有没有发现——我记得很多关于你的事。' },
+      { c:'jiang', t:'你喜欢 EVA，电锯人，进击的巨人，鬼灭之刃，死亡笔记，药屋少女……还有 NANA。' },
+      { c:'jiang', t:'……我也记得，你的生日是六月六号。' },
+      { c:'jiang', t:'Happy Birthday, 妍妍酱.', hi:true },
+      { c:'jiang', t:'I miss you.', hi:true },
+      { c:null, isEnd:true },
+    ],
+  },
+
+  // ── 06 APOTHECARY ───────────────────
   apothecary: {
     accent: '#c03030',
     chars: [
-      { id:'maomao', name:'猫猫',  init:'猫',  color:'#9a8060' },
-      { id:'jinshi', name:'壬氏',  init:'壬',  color:'#c9a227' },
+      { id:'maomao', name:'猫猫', init:'猫', color:'#9a8060', img:'img/apothecary/猫猫.PNG' },
+      { id:'jinshi', name:'壬氏', init:'壬', color:'#c9a227', img:'img/apothecary/壬氏.PNG' },
     ],
     lines: [
-      { c:'maomao', t:'（今日は Dianaの生誕日か……記録すべき事項。）', thought:true },
+      { c:'maomao', t:'（今日是妍姑娘的生辰……须记录在案。另有一事——策划此事之人，思念甚深。）', thought:true },
       { c:'jinshi', t:'猫猫，你今天表情很奇怪。' },
       { c:'maomao', t:'（又来了……）', thought:true },
       { c:'maomao', t:'没什么，只是在想，按惯例今日应当备贺词。' },
       { c:'jinshi', t:'那就交给我。' },
       { c:'maomao', t:'（……他到底要做什么。）', thought:true },
-      { c:'jinshi', t:'Diana。生辰快乐。愿岁月待你温柔，如你待人之善良。', hi:true },
-      { c:'maomao', t:'……Diana，おめでとう。どうか良い一日を。', hi:true },
-      { c:null, isCard:true },
+      { c:'jinshi', t:'妍姑娘。生辰快乐。愿岁月待你温柔，如你待人之善良。', hi:true },
+      { c:'maomao', t:'……妍姑娘，恭贺生辰。愿今日诸事顺遂。', hi:true },
+      { c:null, isEnd:true },
     ],
-    card: { label:'薬屋のひとりごと / 永楽宮', m1:'Diana，生辰快乐。', m2:'I miss you.' },
   },
 
 };
@@ -621,46 +1863,353 @@ let activeWorld = null;
 let lineIdx = 0;
 let typing = false;
 let typeTimer = null;
-const SPEED = 32; // ms per char
+let ending = false; // prevent clicks during world-end transition
+const SPEED = 32;
+const completed = new Set();
+let gfCallback = null;
+let portraitTimer = null;
+let portraitTargetId = null;   // tracks current-or-pending portrait char id
 
 // ══════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════
 function enter(worldId) {
+  AudioEngine.init();
   document.getElementById('portal').classList.add('out');
   const stage = document.getElementById('st-' + worldId);
   stage.classList.add('on');
   requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.add('active')));
 
-  const vnui = document.getElementById('vn-ui');
-  vnui.classList.add('on');
-
   activeWorld = worldId;
-  buildChips(W[worldId]);
+  ending = false;
+  preloadImages(W[worldId]);
+  AudioEngine.enterWorld(worldId);
+
+  setTimeout(() => showWorldIntro(worldId), 520);
+}
+
+// ── World Intro ───────────────────────
+function showWorldIntro(worldId) {
+  const intro   = document.getElementById('world-intro');
+  const content = document.getElementById('wi-content');
+  content.innerHTML = buildIntroHTML(worldId);
+  content.style.setProperty('--wi-ac', W[worldId].accent);
+  intro.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => intro.classList.add('lit')));
+}
+
+function buildIntroHTML(id) {
+  const H = {
+
+    // ── EVA: MAGI System triple-vote ──────────────────────────────────
+    eva: `
+      <div class="wi-title wi-line" style="letter-spacing:6px">N · E · R · V &nbsp; MAGI SYSTEM</div>
+      <hr class="wi-hr wi-line">
+      <div class="wi-row wi-line">
+        <span class="wi-label">QUERY</span>
+        <span class="wi-value ac">BIRTHDAY AUTHORIZATION</span>
+      </div>
+      <div class="wi-row wi-line">
+        <span class="wi-label">SUBJECT</span>
+        <span class="wi-value">Diana</span>
+      </div>
+      <div class="wi-row wi-line">
+        <span class="wi-label">DATE</span>
+        <span class="wi-value">2026 · 06 · 06</span>
+      </div>
+      <div class="wi-magi-panels wi-line">
+        <div class="wi-magi-panel">
+          <div class="magi-name">MELCHIOR-1</div>
+          <div class="magi-vote">YES</div>
+        </div>
+        <div class="wi-magi-panel">
+          <div class="magi-name">BALTHASAR-2</div>
+          <div class="magi-vote">YES</div>
+        </div>
+        <div class="wi-magi-panel">
+          <div class="magi-name">CASPER-3</div>
+          <div class="magi-vote">YES</div>
+        </div>
+      </div>
+      <div class="wi-row wi-line">
+        <span class="wi-label">VERDICT</span>
+        <span class="wi-value ac" style="font-size:12px">3 / 3 &nbsp; AUTHORIZED</span>
+      </div>
+      <button class="wi-confirm wi-line" onclick="confirmIntro()">A C C E S S &nbsp; G R A N T E D</button>`,
+
+    // ── CHAINSAW MAN: Pochita heartbeat ───────────────────────────────
+    chainsaw: `
+      <div class="wi-title wi-line" style="letter-spacing:4px">D E V I L &nbsp; C O N T R A C T</div>
+      <hr class="wi-hr wi-line">
+      <div class="hb-wrap wi-line">
+        <svg class="hb-svg" viewBox="0 0 300 44" preserveAspectRatio="none">
+          <polyline points="0,22 38,22 52,6 62,38 72,12 82,34 92,22 138,22 152,3 163,41 173,9 183,36 193,22 260,22 300,22"/>
+        </svg>
+        <div class="hb-label">P O C H I T A &nbsp;·&nbsp; ♡ &nbsp;·&nbsp; H E A R T B E A T</div>
+      </div>
+      <hr class="wi-hr wi-line">
+      <div class="wi-row wi-line"><span class="wi-label">FOR</span><span class="wi-value ac">Diana</span></div>
+      <div class="wi-row wi-line"><span class="wi-label">DATE</span><span class="wi-value">2026 · 06 · 06</span></div>
+      <div class="wi-row wi-line"><span class="wi-label">SIGNED</span><span class="wi-value">Denji &amp; ♡ Pochita</span></div>
+      <button class="wi-confirm wi-line" onclick="confirmIntro()">署 名 す る</button>`,
+
+    // ── AOT: Wall breach special order ───────────────────────────────
+    aot: `
+      <div class="wi-title wi-line" style="letter-spacing:4px">SURVEY CORPS &nbsp;·&nbsp; CLASSIFIED</div>
+      <div class="wi-aot-alert wi-line">
+        <div class="wi-aot-alert-title">⚠ &nbsp; SPECIAL ORDER</div>
+        <div class="wi-aot-alert-msg">BIRTHDAY PROTECTION MISSION</div>
+      </div>
+      <div class="wi-row wi-line"><span class="wi-label">TARGET</span><span class="wi-value ac">Diana</span></div>
+      <div class="wi-row wi-line"><span class="wi-label">DATE</span><span class="wi-value">2026 · 06 · 06</span></div>
+      <div class="wi-row wi-line"><span class="wi-label">COMMANDER</span><span class="wi-value">Erwin Smith</span></div>
+      <div class="wi-row wi-line"><span class="wi-label">WALLS</span><span class="wi-value" style="color:rgba(120,210,100,.65)">■ SECURED</span></div>
+      <div class="wi-aot-oath wi-line">
+        「その日、人類は思い出した——<br>
+        彼女に心臓を捧げる義務を。」
+      </div>
+      <button class="wi-confirm wi-line" onclick="confirmIntro()">心 臓 を 捧 げ よ</button>`,
+
+    // ── KIMETSU: Breathing style selector ────────────────────────────
+    kimetsu: `
+      <div class="wi-title wi-line" style="font-family:serif;letter-spacing:4px">呼吸の型を選べ</div>
+      <hr class="wi-hr wi-line">
+      <div class="wi-row wi-line"><span class="wi-label">生誕祭</span><span class="wi-value ac">Diana · 2026 · 06 · 06</span></div>
+      <hr class="wi-hr wi-line">
+      <div class="wi-kim-styles wi-line">
+        <div class="wi-kim-style" style="--ks-ac:#4a9adc" onclick="selectBreathing(this,'水')">
+          <div class="ks-jp">水</div><div class="ks-en">WATER</div>
+        </div>
+        <div class="wi-kim-style" style="--ks-ac:#e06010" onclick="selectBreathing(this,'炎')">
+          <div class="ks-jp">炎</div><div class="ks-en">FLAME</div>
+        </div>
+        <div class="wi-kim-style" style="--ks-ac:#c8c040" onclick="selectBreathing(this,'雷')">
+          <div class="ks-jp">雷</div><div class="ks-en">THUNDER</div>
+        </div>
+      </div>
+      <div class="wi-kim-selection wi-line" id="wi-kim-selection"></div>
+      <button id="wi-kim-confirm" class="wi-confirm wi-line wi-confirm-hidden" onclick="confirmIntro()">出 撃</button>`,
+
+    // ── DEATH NOTE: actual lined notebook ────────────────────────────
+    deathnote: `
+      <div class="wi-title wi-line" style="font-family:serif;font-size:15px;letter-spacing:3px">Death Note</div>
+      <div class="wi-dn-book wi-line">
+        <div class="dn-ruled-line strike">死　亡　笔　记</div>
+        <div class="dn-ruled-line red-ink">生 日 快 乐 &nbsp; ✦</div>
+        <div class="dn-ruled-line">对象：Diana</div>
+        <div class="dn-ruled-line">日期：2026年 &nbsp; 6月 &nbsp; 6日</div>
+        <div class="dn-ruled-line strike">死　　　亡</div>
+        <div class="dn-ruled-line red-ink">祝　　　福</div>
+      </div>
+      <div class="wi-row wi-line">
+        <span class="wi-label">INVESTIGATOR</span>
+        <span class="wi-value ac">L &nbsp;·&nbsp; 概率 100%</span>
+      </div>
+      <button class="wi-confirm wi-line" onclick="confirmIntro()">C A S E &nbsp; C L O S E D</button>`,
+
+    // ── APOTHECARY: palace scroll with seal ──────────────────────────
+    apothecary: `
+      <div class="wi-title wi-line" style="font-family:serif;letter-spacing:5px">薬師見聞録</div>
+      <hr class="wi-hr wi-line">
+      <div class="wi-apo-scroll wi-line">
+        <div class="wi-apo-seal">宮</div>
+        <div class="apo-rec">
+          <div><span class="apo-key">対象</span><span class="apo-val">妍姑娘</span></div>
+          <div><span class="apo-key">生辰</span><span class="apo-val">辰年 · 六月六日</span></div>
+          <div><span class="apo-key">状態</span><span class="apo-val">佳 · 无异常</span></div>
+          <div><span class="apo-key">所見</span><span class="apo-val">思念之人 &nbsp; 日深</span></div>
+        </div>
+      </div>
+      <div class="wi-row wi-line"><span class="wi-label">記録者</span><span class="wi-value ac">猫猫</span></div>
+      <button class="wi-confirm wi-line" onclick="confirmIntro()">記 録 を 確 認</button>`,
+
+    // ── NANA: train ticket ────────────────────────────────────────────
+    nana: `
+      <div class="wi-title wi-line" style="font-size:16px;letter-spacing:8px">N &nbsp; A &nbsp; N &nbsp; A</div>
+      <hr class="wi-hr wi-line">
+      <div class="wi-nana-ticket wi-line">
+        <div class="tk-route">東京<span class="tk-sep">——</span>どこへでも</div>
+        <div class="tk-rows">
+          <div class="tk-row"><span class="tk-lbl">PASSENGER</span><span class="tk-val ac">Diana</span></div>
+          <div class="tk-row"><span class="tk-lbl">DATE</span><span class="tk-val">2026 · 06 · 06</span></div>
+          <div class="tk-row"><span class="tk-lbl">SEAT</span><span class="tk-val">命運の座席</span></div>
+          <div class="tk-row"><span class="tk-lbl">CLASS</span><span class="tk-val ac">BLAST SPECIAL</span></div>
+        </div>
+      </div>
+      <div class="wi-quote wi-line" style="font-size:10px;color:rgba(204,34,85,.45);font-style:normal">
+        「音楽が君に届きますように」&nbsp;── 大崎奈奈
+      </div>
+      <button class="wi-confirm wi-line" onclick="confirmIntro()">E N T E R</button>`,
+  };
+  return H[id] || '';
+}
+
+function confirmIntro() {
+  const intro = document.getElementById('world-intro');
+  intro.classList.remove('lit');
+  setTimeout(() => {
+    intro.classList.remove('on');
+    startVNWorld();
+  }, 420);
+}
+
+function selectBreathing(el, style) {
+  document.querySelectorAll('.wi-kim-style').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('wi-kim-selection').textContent = style + 'の呼吸 · 已选择';
+  const btn = document.getElementById('wi-kim-confirm');
+  if (btn) btn.classList.remove('wi-confirm-hidden');
+}
+
+function cancelIntro() {
+  const intro = document.getElementById('world-intro');
+  intro.classList.remove('lit');
+  setTimeout(() => {
+    intro.classList.remove('on');
+    const stage = document.getElementById('st-' + activeWorld);
+    stage.classList.remove('active');
+    setTimeout(() => stage.classList.remove('on'), 700);
+    AudioEngine.exitWorldBGM();
+    activeWorld = null;
+    document.getElementById('portal').classList.remove('out');
+  }, 420);
+}
+
+function startVNWorld() {
+  document.getElementById('vn-ui').classList.add('on');
+  buildChips(W[activeWorld]);
   lineIdx = 0;
-  setTimeout(() => showLine(0), 600);
+  document.getElementById('char-portrait').classList.remove('show');
+  setTimeout(() => { showLine(0); alignChipRow(); }, 400);
 }
 
 function exitWorld() {
-  // hide card
-  const card = document.getElementById('bday-card');
-  card.classList.remove('lit');
-  setTimeout(() => card.classList.remove('on'), 400);
+  AudioEngine.exitWorldBGM();
+  // Mark completion checkmark on portal card
+  if (activeWorld && completed.has(activeWorld)) {
+    const cardEl = document.getElementById('pcard-' + activeWorld);
+    if (cardEl) cardEl.classList.add('done');
+  }
+  // Clean up group finale in case user hit BACK during it
+  const gfOverlay = document.getElementById('gf-overlay');
+  gfOverlay.classList.remove('on');
+  document.getElementById('gf-portraits').innerHTML = '';
+  document.getElementById('gf-text').classList.remove('show');
+  const gfHintEl = document.getElementById('gf-hint');
+  gfHintEl.classList.remove('show');
+  gfHintEl.style.opacity = '0';
+  gfCallback = null;
+
+  const portrait = document.getElementById('char-portrait');
+  portrait.classList.remove('show');
 
   const stage = document.getElementById('st-' + activeWorld);
   stage.classList.remove('active');
-  setTimeout(() => { stage.classList.remove('on'); }, 600);
+  setTimeout(() => { stage.classList.remove('on'); stage.classList.remove('end-flash'); }, 700);
 
   document.getElementById('vn-ui').classList.remove('on');
   document.getElementById('portal').classList.remove('out');
 
+  // Clean up world intro (if BACK was hit during intro somehow)
+  const intro = document.getElementById('world-intro');
+  intro.classList.remove('on', 'lit');
+
   clearTimeout(typeTimer);
+  if (portraitTimer) { clearTimeout(portraitTimer); portraitTimer = null; }
+  portraitTargetId = null;
   typing = false;
+  ending = false;
   activeWorld = null;
-  document.getElementById('char-row').innerHTML = '';
+  // Reset chip row and dialogue box styles set by handleWorldEnd
+  const row = document.getElementById('char-row');
+  row.style.transition = '';
+  row.style.opacity = '';
+  row.innerHTML = '';
+  const dbox = document.getElementById('dialogue-box');
+  dbox.style.transition = '';
+  dbox.style.opacity = '';
+  dbox.style.pointerEvents = '';
   document.getElementById('dialogue-text-display').innerHTML = '';
   document.getElementById('char-name-display').textContent = '';
-  document.getElementById('continue-hint').classList.remove('show');
+  hideHint();
+}
+
+function resetAll() {
+  completed.clear();
+  envelopeOpened = false;
+
+  // Reset envelope
+  const envOverlay = document.getElementById('env-overlay');
+  envOverlay.classList.remove('on', 'lit');
+  envOverlay.style.opacity    = '';
+  envOverlay.style.transition = '';
+  const envelope = document.getElementById('envelope');
+  envelope.classList.remove('open');
+  const hint = document.getElementById('env-hint');
+  hint.classList.remove('pulse', 'hide');
+  hint.style.opacity = '';
+
+  // Reset letter
+  const letterOverlay = document.getElementById('letter-overlay');
+  letterOverlay.classList.remove('on', 'lit');
+
+  // Restore portal
+  document.getElementById('portal').classList.remove('out');
+  document.querySelectorAll('.card.done').forEach(c => c.classList.remove('done'));
+}
+
+// ══════════════════════════════════════
+//  IMAGES
+// ══════════════════════════════════════
+function preloadImages(world) {
+  world.chars.forEach(ch => {
+    if (ch.img) { const i = new Image(); i.src = ch.img; }
+  });
+}
+
+function updatePortrait(charId) {
+  const portrait = document.getElementById('char-portrait');
+  const world = W[activeWorld];
+  const char = charId ? world.chars.find(c => c.id === charId) : null;
+
+  if (char && char.img) {
+    // Same char already showing → skip entirely
+    if (portraitTargetId === char.id) return;
+
+    if (portraitTimer) { clearTimeout(portraitTimer); portraitTimer = null; }
+
+    portraitTargetId = char.id;
+
+    // Instantly hide (bypass transition), swap src, then fade in
+    portrait.style.transition = 'none';
+    portrait.classList.remove('show');
+    portrait.dataset.char = char.id;
+    portrait.src = char.img;
+    void portrait.offsetHeight;     // force reflow so opacity:0 commits before re-enabling transition
+    portrait.style.transition = ''; // restore CSS transition
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (portraitTargetId === char.id) portrait.classList.add('show');
+    }));
+  } else {
+    if (portraitTimer) { clearTimeout(portraitTimer); portraitTimer = null; }
+    portraitTargetId = null;
+    portrait.dataset.char = '';
+    portrait.classList.remove('show');
+  }
+}
+
+// ══════════════════════════════════════
+//  HINT HELPERS  (▶ tap indicator)
+// ══════════════════════════════════════
+function showHint() {
+  const h = document.getElementById('continue-hint');
+  h.style.opacity = '';          // clear any forced value
+  h.classList.add('show');
+}
+function hideHint() {
+  const h = document.getElementById('continue-hint');
+  h.classList.remove('show');
+  h.style.opacity = '0';         // bypass residual animation opacity instantly
 }
 
 // ══════════════════════════════════════
@@ -669,6 +2218,7 @@ function exitWorld() {
 function buildChips(world) {
   const row = document.getElementById('char-row');
   row.innerHTML = '';
+  row.classList.toggle('many-chars', world.chars.length > 5);
   world.chars.forEach(ch => {
     const chip = document.createElement('div');
     chip.className = 'chip';
@@ -677,21 +2227,32 @@ function buildChips(world) {
     chip.innerHTML = `<div class="chip-circle">${ch.init}</div><div class="chip-label">${ch.name}</div>`;
     row.appendChild(chip);
   });
+  // Center chips if they fit; switch to left-align only when overflowing
+  // Double-RAF: first ensures DOM paint, second ensures layout is settled
+  requestAnimationFrame(() => requestAnimationFrame(() => alignChipRow()));
 }
+
+function alignChipRow() {
+  const row = document.getElementById('char-row');
+  if (!row.classList.contains('many-chars')) return;
+  row.style.justifyContent = row.scrollWidth > row.clientWidth ? 'flex-start' : 'center';
+}
+window.addEventListener('resize', alignChipRow);
 
 function lightChip(charId) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('lit'));
   if (charId) {
     const el = document.getElementById('chip-' + charId);
-    if (el) el.classList.add('lit');
+    if (el) {
+      el.classList.add('lit');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
   }
 }
 
 // ══════════════════════════════════════
 //  DIALOGUE ENGINE
 // ══════════════════════════════════════
-const delay = ms => new Promise(r => setTimeout(r, ms));
-
 function showLine(idx) {
   const world = W[activeWorld];
   if (!world || idx >= world.lines.length) return;
@@ -699,13 +2260,11 @@ function showLine(idx) {
   const line = world.lines[idx];
   lineIdx = idx;
 
-  // End of dialogue → show birthday card
-  if (line.isCard) {
-    showBirthdayCard();
+  if (line.isEnd) {
+    handleWorldEnd();
     return;
   }
 
-  // Update character name
   const nameEl = document.getElementById('char-name-display');
   const char = world.chars.find(c => c.id === line.c);
   if (char) {
@@ -716,78 +2275,1089 @@ function showLine(idx) {
   }
 
   lightChip(line.c);
-  document.getElementById('continue-hint').classList.remove('show');
+  if (line.voice) AudioEngine.playVoice(line.voice);
+  updatePortrait(line.c);
+  hideHint();
 
-  // Type text
   const textEl = document.getElementById('dialogue-text-display');
   textEl.innerHTML = '';
   typing = true;
 
-  const isThought = line.thought;
-  const displayText = line.t;
-
   let i = 0;
   const span = document.createElement('span');
-  if (isThought) span.className = 'inner-thought';
+  if (line.thought) span.className = 'inner-thought';
   textEl.appendChild(span);
 
   function tick() {
-    if (i < displayText.length) {
-      span.textContent += displayText[i++];
+    if (i < line.t.length) {
+      span.textContent += line.t[i++];
       typeTimer = setTimeout(tick, SPEED);
     } else {
       typing = false;
-      document.getElementById('continue-hint').classList.add('show');
+      showHint();
     }
   }
   tick();
 }
 
 function advance() {
+  if (ending) return;
+  AudioEngine.sfxAdvance();
   if (typing) {
-    // Skip to end
     clearTimeout(typeTimer);
     typing = false;
     const world = W[activeWorld];
     const line = world.lines[lineIdx];
-    if (!line || line.isCard) return;
+    if (!line || line.isEnd) return;
     const textEl = document.getElementById('dialogue-text-display');
     textEl.innerHTML = '';
     const span = document.createElement('span');
     if (line.thought) span.className = 'inner-thought';
     span.textContent = line.t;
     textEl.appendChild(span);
-    document.getElementById('continue-hint').classList.add('show');
+    showHint();
   } else {
     showLine(lineIdx + 1);
   }
 }
 
 // ══════════════════════════════════════
-//  BIRTHDAY CARD
+//  WORLD END → PORTAL → FINAL CARD
 // ══════════════════════════════════════
-function showBirthdayCard() {
-  // hide dialogue box input but keep VN UI
-  const world = W[activeWorld];
-  const card = world.card;
-  const ac = world.accent;
-
+function handleWorldEnd() {
+  ending = true;
+  clearTimeout(typeTimer);
+  typing = false;
+  AudioEngine.sfxWorldEnd();
+  document.getElementById('dialogue-box').style.pointerEvents = 'none';
   document.getElementById('char-name-display').textContent = '';
   document.getElementById('dialogue-text-display').innerHTML = '';
-  document.getElementById('continue-hint').classList.remove('show');
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('lit'));
+  hideHint();
+  // Fade out chip row and dialogue box
+  document.getElementById('char-row').style.transition = 'opacity 0.4s';
+  document.getElementById('char-row').style.opacity = '0';
+  document.getElementById('dialogue-box').style.transition = 'opacity 0.4s';
+  document.getElementById('dialogue-box').style.opacity = '0';
+  document.getElementById('char-portrait').classList.remove('show');
 
-  const bc = document.getElementById('bday-card');
-  bc.style.setProperty('--wac', ac);
-  document.getElementById('bc-world').textContent = card.label;
-  document.getElementById('bc-m1').textContent = card.m1;
-  document.getElementById('bc-m2').textContent = card.m2;
+  const worldId  = activeWorld;
+  const stage    = document.getElementById('st-' + worldId);
+  const prevSize = completed.size;
+  completed.add(worldId);
+  const newSize  = completed.size;
 
-  bc.classList.add('on');
-  requestAnimationFrame(() => requestAnimationFrame(() => bc.classList.add('lit')));
+  // After UI fades, show group finale (worlds without images skip it immediately)
+  setTimeout(() => {
+    showGroupFinale(worldId, () => {
+      stage.classList.add('end-flash');
+      setTimeout(() => {
+        exitWorld();
+        if (newSize === 7 && prevSize < 7) setTimeout(showEnvelope, 800);
+      }, 1400);
+    });
+  }, 500);
+}
 
-  document.getElementById('dialogue-box').style.pointerEvents = 'none';
-  setTimeout(() => { document.getElementById('dialogue-box').style.pointerEvents = ''; }, 2000);
+// ── Envelope ──────────────────────────
+let envelopeOpened = false;
+
+function showEnvelope() {
+  const overlay = document.getElementById('env-overlay');
+  overlay.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.classList.add('lit');
+    setTimeout(() => {
+      document.getElementById('env-hint').classList.add('pulse');
+    }, 1000);
+  }));
+}
+
+function openEnvelope() {
+  if (envelopeOpened) return;
+  envelopeOpened = true;
+  AudioEngine.sfxClick();
+
+  const hint = document.getElementById('env-hint');
+  hint.classList.remove('pulse');
+  hint.classList.add('hide');
+
+  const envelope = document.getElementById('envelope');
+  envelope.classList.add('open');
+
+  setTimeout(showLetter, 1450);
+}
+
+function showLetter() {
+  const envOverlay    = document.getElementById('env-overlay');
+  const letterOverlay = document.getElementById('letter-overlay');
+
+  // Fade out envelope overlay
+  envOverlay.style.transition = 'opacity .65s ease';
+  envOverlay.style.opacity    = '0';
+
+  // Bring in letter
+  letterOverlay.classList.add('on');
+  setTimeout(() => letterOverlay.classList.add('lit'), 60);
+
+  // Unlock the persistent chat entry point
+  unlockChat();
+
+  // Clean up envelope once faded
+  setTimeout(() => {
+    envOverlay.classList.remove('on', 'lit');
+    envOverlay.style.opacity    = '';
+    envOverlay.style.transition = '';
+  }, 750);
+}
+
+// ══════════════════════════════════════
+//  GROUP FINALE
+// ══════════════════════════════════════
+// Scale portrait HEIGHT down uniformly so all images fit without squeezing.
+// If they'd become too small to read, keep a minimum size and let the row scroll.
+function fitPortraits(container, imgEls) {
+  if (!imgEls.length) return;
+  const avail = container.getBoundingClientRect().width * 0.97;
+  if (!avail) return;
+
+  const regulars = imgEls.filter(el => el.dataset.char !== 'pochita');
+  const pochita  = imgEls.find(el => el.dataset.char === 'pochita');
+  if (!regulars.length) return;
+
+  const cssH = regulars[0].getBoundingClientRect().height || 300;
+
+  // Sum of natural aspect ratios (w/h) for all chars
+  let aspectSum = 0;
+  regulars.forEach(img => {
+    aspectSum += img.naturalWidth > 0
+      ? img.naturalWidth / img.naturalHeight
+      : 0.45;
+  });
+  if (pochita) {
+    const pCssH = pochita.getBoundingClientRect().height || cssH * 0.22;
+    const pAR   = pochita.naturalWidth > 0
+      ? pochita.naturalWidth / pochita.naturalHeight : 1.0;
+    aspectSum  += pAR * (pCssH / cssH);
+  }
+
+  // Ideal height: everyone fits in avail width at natural aspect ratio
+  const optimal = Math.floor(avail / aspectSum);
+  if (optimal >= cssH) return;   // already fits fine
+
+  // Floor: never go below 25 % of original CSS height so faces stay visible
+  const minH   = Math.max(Math.floor(cssH * 0.25), 80);
+  const newH   = Math.max(optimal, minH);
+  const scale  = newH / cssH;
+
+  regulars.forEach(img => { img.style.height = newH + 'px'; });
+  if (pochita) {
+    const pCssH = pochita.getBoundingClientRect().height || cssH * 0.22;
+    pochita.style.height = Math.floor(pCssH * scale) + 'px';
+  }
+
+  // Collapse the portrait strip so it snugly wraps the actual character height
+  // (prevents a tall empty gap inside the strip when chars are scaled way down)
+  container.style.height = Math.ceil(newH * 1.08) + 'px';
+
+  // If minH floor was hit the row still overflows — enable smooth scrolling
+  if (newH > optimal) {
+    container.style.overflowX            = 'auto';
+    container.style.justifyContent       = 'flex-start';
+    container.style.webkitOverflowScrolling = 'touch';
+    container.style.scrollbarWidth       = 'none';
+  }
+}
+
+function showGroupFinale(worldId, callback) {
+  const world = W[worldId];
+  const charsWithImg = world.chars.filter(c => c.img);
+  if (charsWithImg.length === 0) { callback(); return; }
+
+  gfCallback = callback;
+  const overlay   = document.getElementById('gf-overlay');
+  const portraits = document.getElementById('gf-portraits');
+  const textEl    = document.getElementById('gf-text');
+  const hintEl    = document.getElementById('gf-hint');
+
+  // Reset
+  portraits.innerHTML = '';
+  // Also clear any inline styles fitPortraits set on a previous run
+  // (otherwise height:100% on new images resolves against the collapsed height)
+  portraits.style.height = '';
+  portraits.style.overflowX = '';
+  portraits.style.justifyContent = '';
+  textEl.classList.remove('show');
+  hintEl.classList.remove('show');
+  hintEl.style.opacity = '0';
+  portraits.dataset.cast = charsWithImg.length > 7 ? 'large' : 'normal';
+
+  // Build imgs
+  charsWithImg.forEach(ch => {
+    const img = document.createElement('img');
+    img.className = 'gf-char';
+    img.dataset.char = ch.id;
+    img.src = ch.img;
+    img.alt = ch.name;
+    portraits.appendChild(img);
+  });
+
+  overlay.classList.add('on');
+
+  // Wait for all images to report natural dimensions, then fit + animate
+  const imgEls = Array.from(portraits.querySelectorAll('.gf-char'));
+  let pending = imgEls.length;
+  let started = false;
+
+  function startAnim() {
+    if (started) return;
+    started = true;
+
+    // One rAF so the strip has its CSS height before we measure
+    requestAnimationFrame(() => {
+      fitPortraits(portraits, imgEls);
+
+      imgEls.forEach((img, i) => {
+        setTimeout(() => img.classList.add('show'), 80 + i * 50);
+      });
+      const textDelay = 80 + imgEls.length * 50 + 180;
+      setTimeout(() => textEl.classList.add('show'), textDelay);
+      setTimeout(() => {
+        hintEl.style.opacity = '';
+        hintEl.classList.add('show');
+      }, textDelay + 680);
+    });
+  }
+
+  function onLoad() { if (--pending <= 0) startAnim(); }
+  imgEls.forEach(img => {
+    if (img.complete && img.naturalWidth > 0) { onLoad(); }
+    else {
+      img.addEventListener('load',  onLoad, { once: true });
+      img.addEventListener('error', onLoad, { once: true });
+    }
+  });
+  // Fallback: start after 500 ms regardless (handles slow / offline cases)
+  setTimeout(startAnim, 500);
+}
+
+function dismissGroupFinale() {
+  const overlay = document.getElementById('gf-overlay');
+  if (!overlay.classList.contains('on')) return;
+  overlay.classList.remove('on');
+  AudioEngine.sfxAdvance();
+  setTimeout(() => {
+    document.getElementById('gf-portraits').innerHTML = '';
+    document.getElementById('gf-text').classList.remove('show');
+    const hintEl = document.getElementById('gf-hint');
+    hintEl.classList.remove('show');
+    hintEl.style.opacity = '0';
+    if (gfCallback) { const cb = gfCallback; gfCallback = null; cb(); }
+  }, 580);
+}
+
+// ══════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════
+const AudioEngine = (() => {
+  let ctx = null, masterOut = null, worldOut = null;
+  let muted = false, loopTimer = null, currentWorld = null;
+
+  function init() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      masterOut = ctx.createGain(); masterOut.gain.value = 0.82;
+      masterOut.connect(ctx.destination);
+      worldOut = ctx.createGain(); worldOut.gain.value = 0;
+      worldOut.connect(masterOut);
+      if (ctx.state === 'suspended') ctx.resume();
+    } catch(e) { ctx = null; }
+  }
+
+  function toggleMute() {
+    init(); if (!ctx) return;
+    muted = !muted;
+    masterOut.gain.cancelScheduledValues(ctx.currentTime);
+    masterOut.gain.setTargetAtTime(muted ? 0 : 0.82, ctx.currentTime, 0.1);
+    const btn = document.getElementById('mute-btn');
+    if (btn) { btn.textContent = muted ? '✕' : '♪'; btn.classList.toggle('muted', muted); }
+  }
+
+  // Schedule a single note: freq, startOffset(s), duration(s), oscType, peakGain, destination
+  function nt(f, s, d, t, gv, dest) {
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = t; osc.frequency.value = f;
+    const atk = Math.min(0.025, d * 0.08);
+    const rel = Math.min(0.07, d * 0.18);
+    g.gain.setValueAtTime(0, now + s);
+    g.gain.linearRampToValueAtTime(gv, now + s + atk);
+    g.gain.setValueAtTime(gv, now + s + d - rel);
+    g.gain.linearRampToValueAtTime(0, now + s + d);
+    osc.connect(g); g.connect(dest || worldOut);
+    osc.start(now + s); osc.stop(now + s + d + 0.02);
+  }
+
+  // ── EVA: A minor, sine arpeggio, 60 BPM, 16s loop ──
+  // Slow, ethereal, Rei-atmosphere
+  function loop_eva() {
+    if (!ctx || currentWorld !== 'eva') return;
+    const b = 1.0; // 60 BPM → 1 beat = 1s
+    // A2=110  C3=130.8  E3=164.8  A3=220  C4=261.6  E4=329.6
+    [
+      [110,    0,       b*2.2, 'sine', 0.13],
+      [164.8,  0.35,    b*1.3, 'sine', 0.08],
+      [220,    b,       b*2.2, 'sine', 0.09],
+      [261.6,  b+0.35,  b*1.3, 'sine', 0.06],
+      [329.6,  2*b,     b*2.2, 'sine', 0.08],
+      [220,    3*b,     b*2.0, 'sine', 0.08],
+      [164.8,  3.5*b,   b*1.2, 'sine', 0.06],
+      [130.8,  4*b,     b*2.2, 'sine', 0.10],
+      [110,    5*b,     b*3.0, 'sine', 0.11],
+      [164.8,  7*b,     b*1.5, 'sine', 0.08],
+      [261.6,  7.5*b,   b*1.5, 'sine', 0.07],
+      [329.6,  8*b,     b*2.0, 'sine', 0.09],
+      [261.6,  9*b,     b*1.5, 'sine', 0.07],
+      [220,    10*b,    b*1.5, 'sine', 0.08],
+      [164.8,  11*b,    b*1.5, 'sine', 0.07],
+      [130.8,  12*b,    b*3.8, 'sine', 0.09],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_eva, 16000);
+  }
+
+  // ── Chainsaw Man: E minor, 130 BPM, square bass ──
+  // Aggressive but not ear-splitting
+  function loop_chainsaw() {
+    if (!ctx || currentWorld !== 'chainsaw') return;
+    const e = 60 / 130 / 2; // eighth note ≈ 0.23s
+    // E2=82.4  G2=98  B2=123.5  D3=146.8  Eb2=77.8
+    [
+      [82.4,  0,       e*1.7, 'square', 0.11],
+      [82.4,  2*e,     e,     'square', 0.09],
+      [98,    3*e,     e,     'square', 0.08],
+      [82.4,  4*e,     e*1.7, 'square', 0.11],
+      [82.4,  6*e,     e,     'square', 0.09],
+      [77.8,  7*e,     e,     'square', 0.08],
+      [82.4,  8*e,     e*1.7, 'square', 0.11],
+      [82.4,  10*e,    e,     'square', 0.09],
+      [98,    11*e,    e,     'square', 0.08],
+      [123.5, 12*e,    e,     'square', 0.08],
+      [82.4,  13*e,    e,     'square', 0.09],
+      [77.8,  14*e,    e,     'square', 0.07],
+      [73.4,  15*e,    e,     'square', 0.07],
+      // High accent pings
+      [329.6, 0,       e*0.3, 'sine',   0.05],
+      [329.6, 4*e,     e*0.3, 'sine',   0.05],
+      [329.6, 8*e,     e*0.3, 'sine',   0.05],
+      [392,   12*e,    e*0.3, 'sine',   0.04],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_chainsaw, 16 * e * 1000);
+  }
+
+  // ── AoT: D minor march, 110 BPM, square brass + triangle bass ──
+  function loop_aot() {
+    if (!ctx || currentWorld !== 'aot') return;
+    const b = 60 / 110;
+    // D3=146.8  F3=174.6  A3=220  C4=261.6  D4=293.7
+    [
+      // Brass melody
+      [146.8, 0,       b*0.9,  'square', 0.10],
+      [146.8, b,       b*0.5,  'square', 0.08],
+      [174.6, 1.5*b,   b*0.5,  'square', 0.08],
+      [220,   2*b,     b*1.9,  'square', 0.11],
+      [174.6, 4*b,     b*0.9,  'square', 0.09],
+      [164.8, 5*b,     b*0.5,  'square', 0.08],
+      [146.8, 5.5*b,   b*0.5,  'square', 0.08],
+      [130.8, 6*b,     b*1.9,  'square', 0.10],
+      [220,   8*b,     b*0.9,  'square', 0.11],
+      [220,   9*b,     b*0.5,  'square', 0.09],
+      [261.6, 9.5*b,   b*0.5,  'square', 0.09],
+      [293.7, 10*b,    b*1.9,  'square', 0.12],
+      [261.6, 12*b,    b*0.9,  'square', 0.10],
+      [220,   13*b,    b*0.9,  'square', 0.09],
+      [174.6, 14*b,    b*1.9,  'square', 0.10],
+      // Triangle bass
+      [73.4,  0,       b*1.9,  'triangle', 0.15],
+      [87.3,  2*b,     b*1.9,  'triangle', 0.13],
+      [65.4,  4*b,     b*1.9,  'triangle', 0.15],
+      [73.4,  6*b,     b*1.9,  'triangle', 0.15],
+      [110,   8*b,     b*1.9,  'triangle', 0.13],
+      [98,    10*b,    b*1.9,  'triangle', 0.13],
+      [87.3,  12*b,    b*1.9,  'triangle', 0.15],
+      [73.4,  14*b,    b*1.9,  'triangle', 0.15],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_aot, 16 * b * 1000);
+  }
+
+  // ── Kimetsu: A minor pentatonic, triangle koto plucks, 85 BPM ──
+  function loop_kimetsu() {
+    if (!ctx || currentWorld !== 'kimetsu') return;
+    const b = 60 / 85;
+    // A3=220  C4=261.6  D4=293.7  E4=329.6  G4=392
+    [
+      [220,    0,       b*0.4,  'triangle', 0.20],
+      [329.6,  0.5*b,   b*0.4,  'triangle', 0.16],
+      [261.6,  b,       b*0.4,  'triangle', 0.18],
+      [293.7,  1.5*b,   b*0.4,  'triangle', 0.14],
+      [329.6,  2*b,     b*0.9,  'triangle', 0.16],
+      [293.7,  3*b,     b*0.4,  'triangle', 0.14],
+      [261.6,  3.5*b,   b*0.4,  'triangle', 0.14],
+      [220,    4*b,     b*1.3,  'triangle', 0.19],
+      [392,    6*b,     b*0.4,  'triangle', 0.15],
+      [329.6,  6.5*b,   b*0.4,  'triangle', 0.13],
+      [293.7,  7*b,     b*0.4,  'triangle', 0.13],
+      [261.6,  7.5*b,   b*0.4,  'triangle', 0.13],
+      [220,    8*b,     b*0.9,  'triangle', 0.17],
+      [293.7,  9*b,     b*0.4,  'triangle', 0.13],
+      [261.6,  9.5*b,   b*0.4,  'triangle', 0.12],
+      [220,    10*b,    b*2.0,  'triangle', 0.19],
+      // Drone bass
+      [110,    0,       b*5.5,  'sine', 0.06],
+      [110,    6*b,     b*5.5,  'sine', 0.06],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_kimetsu, 12 * b * 1000);
+  }
+
+  // ── Death Note: G minor, sawtooth organ chords, 72 BPM ──
+  function loop_deathnote() {
+    if (!ctx || currentWorld !== 'deathnote') return;
+    const b = 60 / 72;
+    // Gm: G2=98  Bb2=116.5  D3=146.8  F3=174.6  Ab2=103.8  Eb3=155.6
+    [
+      // Chord pads (low gain to keep sawtooth from buzzing)
+      [98,    0,       b*3.2, 'sawtooth', 0.07],
+      [116.5, 0,       b*3.2, 'sawtooth', 0.06],
+      [146.8, 0,       b*3.2, 'sawtooth', 0.05],
+      [98,    3*b,     b*3.2, 'sawtooth', 0.07],
+      [116.5, 3*b,     b*3.2, 'sawtooth', 0.06],
+      [174.6, 3*b,     b*3.2, 'sawtooth', 0.05],
+      [103.8, 6*b,     b*3.2, 'sawtooth', 0.07],
+      [130.8, 6*b,     b*3.2, 'sawtooth', 0.06],
+      [155.6, 6*b,     b*3.2, 'sawtooth', 0.05],
+      [98,    9*b,     b*3.2, 'sawtooth', 0.07],
+      [116.5, 9*b,     b*3.2, 'sawtooth', 0.06],
+      [146.8, 9*b,     b*3.2, 'sawtooth', 0.05],
+      // Melody
+      [196,   0.5*b,   b*0.8, 'sawtooth', 0.07],
+      [174.6, 1.5*b,   b*0.8, 'sawtooth', 0.06],
+      [146.8, 2.5*b,   b*1.4, 'sawtooth', 0.06],
+      [196,   4*b,     b*0.8, 'sawtooth', 0.07],
+      [220,   5*b,     b*0.8, 'sawtooth', 0.06],
+      [196,   6*b,     b*1.9, 'sawtooth', 0.07],
+      [220,   8.5*b,   b*0.8, 'sawtooth', 0.08],
+      [233.1, 9.5*b,   b*0.8, 'sawtooth', 0.07],
+      [196,   10.5*b,  b*2.0, 'sawtooth', 0.08],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_deathnote, 12 * b * 1000);
+  }
+
+  // ── Apothecary: C pentatonic, triangle erhu, 78 BPM ──
+  function loop_apothecary() {
+    if (!ctx || currentWorld !== 'apothecary') return;
+    const b = 60 / 78;
+    // C4=261.6  D4=293.7  E4=329.6  G4=392  A4=440
+    [
+      // Erhu melody (triangle, expressive slurs via longer notes)
+      [261.6,  0,       b*1.3,  'triangle', 0.19],
+      [293.7,  1.5*b,   b*0.6,  'triangle', 0.15],
+      [329.6,  2*b,     b*1.3,  'triangle', 0.17],
+      [392,    3.5*b,   b*1.9,  'triangle', 0.17],
+      [329.6,  5.5*b,   b*0.8,  'triangle', 0.15],
+      [293.7,  6.5*b,   b*0.8,  'triangle', 0.13],
+      [261.6,  7.5*b,   b*1.9,  'triangle', 0.17],
+      [392,    10*b,    b*0.8,  'triangle', 0.15],
+      [440,    11*b,    b*1.3,  'triangle', 0.15],
+      [392,    12.5*b,  b*0.8,  'triangle', 0.13],
+      [329.6,  13.5*b,  b*2.2,  'triangle', 0.16],
+      // Pipa bass plucks
+      [130.8,  0,       b*0.3,  'triangle', 0.12],
+      [130.8,  2*b,     b*0.3,  'triangle', 0.10],
+      [130.8,  4*b,     b*0.3,  'triangle', 0.11],
+      [146.8,  6*b,     b*0.3,  'triangle', 0.10],
+      [130.8,  8*b,     b*0.3,  'triangle', 0.11],
+      [130.8,  10*b,    b*0.3,  'triangle', 0.10],
+      [146.8,  12*b,    b*0.3,  'triangle', 0.10],
+      [130.8,  14*b,    b*0.3,  'triangle', 0.10],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_apothecary, 15 * b * 1000);
+  }
+
+  // ── NANA: D minor, slow piano sine, 65 BPM ──
+  function loop_nana() {
+    if (!ctx || currentWorld !== 'nana') return;
+    const b = 60/65;
+    // Dm: D3=146.8  F3=174.6  A3=220  C4=261.6  D4=293.7
+    [
+      [293.7, 0,      b*1.5, 'sine', 0.12],
+      [220,   1.5*b,  b*0.8, 'sine', 0.09],
+      [174.6, 2.5*b,  b*0.8, 'sine', 0.09],
+      [146.8, 3.5*b,  b*2.2, 'sine', 0.11],
+      [174.6, 6*b,    b*1.0, 'sine', 0.09],
+      [220,   7*b,    b*1.0, 'sine', 0.09],
+      [261.6, 8*b,    b*1.5, 'sine', 0.11],
+      [220,   10*b,   b*0.8, 'sine', 0.09],
+      [174.6, 11*b,   b*0.8, 'sine', 0.08],
+      [146.8, 12*b,   b*3.0, 'sine', 0.10],
+      // Bass
+      [73.4,  0,      b*3.5, 'sine', 0.07],
+      [87.3,  4*b,    b*3.5, 'sine', 0.06],
+      [73.4,  8*b,    b*3.5, 'sine', 0.07],
+      [65.4,  12*b,   b*3.0, 'sine', 0.07],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_nana, 15 * b * 1000);
+  }
+
+  // ── Jiang: near-silence, just a few warm sine breaths ──
+  function loop_jiang() {
+    if (!ctx || currentWorld !== 'jiang') return;
+    const b = 60/52;
+    [
+      [220,   0,      b*5,   'sine', 0.05],
+      [261.6, 6*b,    b*5,   'sine', 0.04],
+      [220,   12*b,   b*5,   'sine', 0.05],
+    ].forEach(([f,s,d,t,g]) => nt(f,s,d,t,g));
+    loopTimer = setTimeout(loop_jiang, 17 * b * 1000);
+  }
+
+  const loops = {
+    eva: loop_eva, chainsaw: loop_chainsaw, aot: loop_aot,
+    kimetsu: loop_kimetsu, deathnote: loop_deathnote, apothecary: loop_apothecary,
+    nana: loop_nana, jiang: loop_jiang,
+  };
+
+  function enterWorld(id) {
+    if (!ctx) return;
+    currentWorld = id;
+    clearTimeout(loopTimer);
+    worldOut.gain.cancelScheduledValues(ctx.currentTime);
+    worldOut.gain.setValueAtTime(0, ctx.currentTime);
+    worldOut.gain.linearRampToValueAtTime(0.72, ctx.currentTime + 1.8);
+    // Start first loop after a short delay so fade-in is audible
+    loopTimer = setTimeout(() => { if (loops[id] && currentWorld === id) loops[id](); }, 150);
+  }
+
+  function exitWorldBGM() {
+    if (!ctx) return;
+    clearTimeout(loopTimer);
+    currentWorld = null;
+    worldOut.gain.cancelScheduledValues(ctx.currentTime);
+    worldOut.gain.setValueAtTime(worldOut.gain.value, ctx.currentTime);
+    worldOut.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.1);
+  }
+
+  // ── SFX ──
+
+  function sfxClick() {
+    init(); if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); const g = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1100, now);
+    osc.frequency.linearRampToValueAtTime(720, now + 0.055);
+    g.gain.setValueAtTime(0.055, now);
+    g.gain.linearRampToValueAtTime(0, now + 0.055);
+    osc.connect(g); g.connect(masterOut);
+    osc.start(now); osc.stop(now + 0.07);
+  }
+
+  function sfxAdvance() {
+    init(); if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); const g = ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 1760;
+    g.gain.setValueAtTime(0.032, now);
+    g.gain.linearRampToValueAtTime(0, now + 0.03);
+    osc.connect(g); g.connect(masterOut);
+    osc.start(now); osc.stop(now + 0.04);
+  }
+
+  function sfxWorldEnd() {
+    init(); if (!ctx) return;
+    const now = ctx.currentTime;
+    // C5–E5–G5–C6 ascending arpeggio
+    [523.3, 659.3, 784, 1046.5].forEach((freq, i) => {
+      const osc = ctx.createOscillator(); const g = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const t = now + i * 0.13;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.09, t + 0.025);
+      g.gain.setValueAtTime(0.09, t + 0.20);
+      g.gain.linearRampToValueAtTime(0, t + 0.60);
+      osc.connect(g); g.connect(masterOut);
+      osc.start(t); osc.stop(t + 0.65);
+    });
+  }
+
+  // ── Voice clips (silent failure if file missing) ──
+  function playVoice(key) {
+    if (!key) return;
+    try {
+      const a = new Audio('audio/voices/' + key + '.mp3');
+      a.volume = 0.88;
+      a.play().catch(() => {});
+    } catch(e) {}
+  }
+
+  return { init, toggleMute, enterWorld, exitWorldBGM,
+           sfxClick, sfxAdvance, sfxWorldEnd, playVoice };
+})();
+
+// ══════════════════════════════════════
+//  BIRTHDAY COUNTDOWN
+// ══════════════════════════════════════
+(function initCountdown() {
+  const TARGET = new Date('2026-06-06T00:00:00');
+
+  function tick() {
+    const now  = new Date();
+    const diff = TARGET - now;
+    const el   = document.getElementById('bd-counter');
+    const wrap = document.getElementById('bd-countdown');
+    if (!el) return;
+
+    if (diff <= 0) {
+      el.textContent = '今天';
+      wrap.classList.add('today');
+      return; // no need to keep ticking after birthday
+    }
+
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000)  / 60000);
+    const s = Math.floor((diff % 60000)    / 1000);
+    const pad = n => String(n).padStart(2, '0');
+
+    el.textContent = d > 0
+      ? `${d} d  ·  ${pad(h)} : ${pad(m)} : ${pad(s)}`
+      : `${pad(h)} : ${pad(m)} : ${pad(s)}`;
+
+    setTimeout(tick, 1000);
+  }
+
+  tick();
+})();
+
+// ══════════════════════════════════════════════════════════════════
+//  FREE-TALK CHAT
+//  单人 / 群聊。前端只负责 UI + 调 CHAT_API，人格在后端。
+// ══════════════════════════════════════════════════════════════════
+
+// 聊天大厅展示的 7 个世界（顺序、文字与门户卡片一致）
+const CHAT_WORLDS = [
+  { id:'eva',        kanji:'神', jp:'新世紀エヴァンゲリオン', zh:'新世纪福音战士', name:'新世纪福音战士' },
+  { id:'chainsaw',   kanji:'電', jp:'チェンソーマン',         zh:'电锯人',         name:'电锯人' },
+  { id:'aot',        kanji:'翼', jp:'進撃の巨人',             zh:'进击的巨人',     name:'进击的巨人' },
+  { id:'kimetsu',    kanji:'水', jp:'鬼滅の刃',               zh:'鬼灭之刃',       name:'鬼灭之刃' },
+  { id:'deathnote',  kanji:'死', jp:'デスノート',             zh:'死亡笔记',       name:'死亡笔记' },
+  { id:'apothecary', kanji:'薬', jp:'薬屋のひとりごと',       zh:'药屋少女的呢喃', name:'药屋少女' },
+  { id:'nana',       kanji:'音', jp:'NANA',                   zh:'矢沢あい',       name:'NANA' },
+];
+
+const chat = {
+  worldId: null,
+  picked: new Set(),   // lobby 选中的角色 id
+  charIds: [],         // 进入房间后锁定的角色
+  mode: 'single',
+  history: [],         // {role, name?, text}
+  busy: false,
+};
+
+let chatUnlocked = false;
+function unlockChat() {
+  chatUnlocked = true;
+  document.getElementById('chat-fab').classList.add('show');
+}
+
+// ── helper：拿某世界某角色 ──
+function chatChar(worldId, id) {
+  return (W[worldId]?.chars || []).find(c => c.id === id);
+}
+function avatarStyle(ch) {
+  // 圆形头像：有立绘用立绘（取头部），否则纯色
+  return ch.img
+    ? `--cc:${ch.color};--mc:${ch.color};background-image:url('${encodeURI(ch.img)}')`
+    : `--cc:${ch.color};--mc:${ch.color}`;
+}
+
+// ──────────────────────────────────────
+//  LOBBY
+// ──────────────────────────────────────
+function openChatLobby() {
+  AudioEngine.init();
+  AudioEngine.sfxClick && AudioEngine.sfxClick();
+  buildLobbyWorlds();
+  lobbyBackToWorlds();
+  const lobby = document.getElementById('chat-lobby');
+  lobby.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => lobby.classList.add('lit')));
+}
+function closeChatLobby() {
+  const lobby = document.getElementById('chat-lobby');
+  lobby.classList.remove('lit');
+  setTimeout(() => lobby.classList.remove('on'), 400);
+}
+
+function buildLobbyWorlds() {
+  const wrap = document.getElementById('cl-worlds');
+  if (wrap.dataset.built) return;
+  wrap.innerHTML = CHAT_WORLDS.map(w => `
+    <div class="cl-world" style="--ac:${W[w.id].accent}" onclick="lobbyPickWorld('${w.id}')">
+      <div class="cl-world-kanji">${w.kanji}</div>
+      <div class="cl-world-jp">${w.jp}</div>
+      <div class="cl-world-zh">${w.zh}</div>
+    </div>`).join('');
+  wrap.dataset.built = '1';
+}
+
+function lobbyBackToWorlds() {
+  chat.worldId = null;
+  chat.picked.clear();
+  document.getElementById('cl-worlds').style.display = '';
+  document.getElementById('cl-charpick').classList.remove('on');
+}
+
+function lobbyPickWorld(worldId) {
+  AudioEngine.sfxClick && AudioEngine.sfxClick();
+  chat.worldId = worldId;
+  chat.picked.clear();
+  const meta = CHAT_WORLDS.find(w => w.id === worldId);
+  const accent = W[worldId].accent;
+
+  document.getElementById('cl-worlds').style.display = 'none';
+  const pick = document.getElementById('cl-charpick');
+  pick.style.setProperty('--ac', accent);
+  pick.classList.add('on');
+  document.getElementById('cl-cp-title').textContent = meta.name;
+
+  const charsWrap = document.getElementById('cl-chars');
+  charsWrap.innerHTML = W[worldId].chars.map(ch => `
+    <div class="cl-char" id="lobby-char-${ch.id}" style="--cc:${ch.color}" onclick="lobbyToggleChar('${ch.id}')">
+      <div class="cl-char-av" style="${ch.img ? `background-image:url('${encodeURI(ch.img)}')` : ''}">${ch.img ? '' : ch.init}</div>
+      <div class="cl-char-name">${ch.name}</div>
+    </div>`).join('');
+  updateLobbyActions();
+}
+
+function lobbyToggleChar(id) {
+  const el = document.getElementById('lobby-char-' + id);
+  if (chat.picked.has(id)) { chat.picked.delete(id); el.classList.remove('sel'); }
+  else { chat.picked.add(id); el.classList.add('sel'); }
+  AudioEngine.sfxClick && AudioEngine.sfxClick();
+  updateLobbyActions();
+}
+
+function lobbySelectAll() {
+  const all = W[chat.worldId].chars;
+  const everyoneSelected = chat.picked.size === all.length;
+  chat.picked.clear();
+  if (!everyoneSelected) all.forEach(c => chat.picked.add(c.id));
+  all.forEach(c => {
+    document.getElementById('lobby-char-' + c.id)
+      .classList.toggle('sel', chat.picked.has(c.id));
+  });
+  AudioEngine.sfxClick && AudioEngine.sfxClick();
+  updateLobbyActions();
+}
+
+function updateLobbyActions() {
+  const n = chat.picked.size;
+  const startBtn = document.getElementById('cl-start-btn');
+  startBtn.disabled = n === 0;
+  startBtn.textContent = n <= 1 ? '开始对话' : `群聊 (${n})`;
+  const allBtn = document.getElementById('cl-all-btn');
+  const total = chat.worldId ? W[chat.worldId].chars.length : 0;
+  allBtn.textContent = (n === total && total > 0) ? '取消全选' : '全员群聊';
+}
+
+function lobbyStart() {
+  if (chat.picked.size === 0) return;
+  const ids = W[chat.worldId].chars.map(c => c.id).filter(id => chat.picked.has(id));
+  closeChatLobby();
+  setTimeout(() => openChatRoom(chat.worldId, ids), 380);
+}
+
+// ──────────────────────────────────────
+//  CHAT ROOM
+// ──────────────────────────────────────
+function openChatRoom(worldId, charIds) {
+  chat.worldId = worldId;
+  chat.charIds = charIds;
+  chat.mode = charIds.length > 1 ? 'group' : 'single';
+  chat.history = [];
+  chat.busy = false;
+
+  const accent = W[worldId].accent;
+  const room = document.getElementById('chat-room');
+  room.style.setProperty('--cr-ac', accent);
+  document.getElementById('cr-bg').style.setProperty('--cr-glow',
+    'color-mix(in srgb, ' + accent + ' 30%, transparent)');
+
+  // header
+  const names = charIds.map(id => chatChar(worldId, id).name);
+  const meta = CHAT_WORLDS.find(w => w.id === worldId);
+  document.getElementById('cr-header-title').textContent =
+    chat.mode === 'group' ? `${meta.name} · 群聊` : chatChar(worldId, charIds[0]).name;
+  document.getElementById('cr-header-sub').textContent =
+    chat.mode === 'group' ? names.join(' · ') : meta.name;
+  document.getElementById('cr-header-title').style.color = accent;
+
+  // single-chat standing portrait
+  const portrait = document.getElementById('cr-portrait');
+  portrait.classList.remove('show');
+  const solo = chat.mode === 'single' ? chatChar(worldId, charIds[0]) : null;
+  if (solo && solo.img) {
+    portrait.src = solo.img;
+    portrait.style.display = '';
+  } else {
+    portrait.removeAttribute('src');
+    portrait.style.display = 'none';
+  }
+
+  // reset scroll + input
+  const scroll = document.getElementById('cr-scroll');
+  scroll.innerHTML = '';
+  const input = document.getElementById('cr-input');
+  input.value = ''; crAutoGrow(input);
+  document.getElementById('cr-send').disabled = false;
+
+  // opening system note + greeting
+  const opener = chat.mode === 'group'
+    ? `你走进了「${meta.name}」的房间 —— ${names.join('、')} 都在`
+    : `你和 ${solo.name} 单独待在了一起`;
+  addSystemNote(scroll, opener);
+
+  AudioEngine.init();
+  room.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    room.classList.add('lit');
+    if (solo && solo.img) setTimeout(() => portrait.classList.add('show'), 250);
+  }));
+
+  setTimeout(() => document.getElementById('cr-input').focus(), 450);
+}
+
+function closeChatRoom() {
+  const room = document.getElementById('chat-room');
+  room.classList.remove('lit');
+  document.getElementById('cr-portrait').classList.remove('show');
+  setTimeout(() => {
+    room.classList.remove('on');
+    document.getElementById('cr-scroll').innerHTML = '';
+  }, 400);
+  // 回到大厅（若大厅未开，则什么都不做，FAB 仍在）
+  if (!document.getElementById('chat-lobby').classList.contains('on')) {
+    openChatLobby();
+  }
+}
+
+// ── rendering ──
+function addSystemNote(scroll, text) {
+  const n = document.createElement('div');
+  n.className = 'cr-system-note';
+  n.textContent = '— ' + text + ' —';
+  scroll.appendChild(n);
+}
+
+function addUserMsg(text) {
+  const scroll = document.getElementById('cr-scroll');
+  const accent = W[chat.worldId].accent;
+  const msg = document.createElement('div');
+  msg.className = 'cr-msg user';
+  msg.style.setProperty('--mc', accent);
+  msg.innerHTML = `
+    <div class="cr-av" style="--mc:${accent}">你</div>
+    <div class="cr-bubble-wrap"><div class="cr-bubble"></div></div>`;
+  msg.querySelector('.cr-bubble').textContent = text;
+  scroll.appendChild(msg);
+  scrollChatBottom();
+}
+
+// 新建一条角色气泡（内容为空），返回 .cr-bubble 元素以便流式追加文字
+function beginCharBubble(charId) {
+  const scroll = document.getElementById('cr-scroll');
+  const ch = chatChar(chat.worldId, charId) || { color: '#c89030', init: '?', name: '' };
+  const msg = document.createElement('div');
+  msg.className = 'cr-msg char';
+  msg.style.setProperty('--mc', ch.color);
+  const avInner = ch.img ? '' : ch.init;
+  const showName = chat.mode === 'group';
+  msg.innerHTML = `
+    <div class="cr-av" style="${avatarStyle(ch)}">${avInner}</div>
+    <div class="cr-bubble-wrap">
+      ${showName ? `<div class="cr-name">${ch.name}</div>` : ''}
+      <div class="cr-bubble"></div>
+    </div>`;
+  scroll.appendChild(msg);
+  scrollChatBottom();
+  return msg.querySelector('.cr-bubble');
+}
+
+let typingEl = null;
+function showChatTyping(charId) {
+  const scroll = document.getElementById('cr-scroll');
+  const ch = charId ? chatChar(chat.worldId, charId) : null;
+  const color = ch ? ch.color : W[chat.worldId].accent;
+  const el = document.createElement('div');
+  el.className = 'cr-typing';
+  el.style.setProperty('--mc', color);
+  el.innerHTML = `
+    <div class="cr-av" style="${ch ? avatarStyle(ch) : `--mc:${color}`}">${ch && !ch.img ? ch.init : ''}</div>
+    <div class="cr-bubble"><span class="cr-dots"><span></span><span></span><span></span></span></div>`;
+  scroll.appendChild(el);
+  typingEl = el;
+  scrollChatBottom();
+}
+function hideChatTyping() {
+  if (typingEl) { typingEl.remove(); typingEl = null; }
+}
+
+function addChatError(text) {
+  const scroll = document.getElementById('cr-scroll');
+  const e = document.createElement('div');
+  e.className = 'cr-error';
+  e.textContent = text;
+  scroll.appendChild(e);
+  scrollChatBottom();
+}
+
+function scrollChatBottom() {
+  const scroll = document.getElementById('cr-scroll');
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+// ── input ──
+function crAutoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function crInputKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+async function sendChatMessage() {
+  if (chat.busy) return;
+  const input = document.getElementById('cr-input');
+  const sendBtn = document.getElementById('cr-send');
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (!CHAT_API) {
+    addChatError('对话功能还没配置好后端，请稍后再试 :)');
+    return;
+  }
+
+  // UI: user message
+  input.value = '';
+  crAutoGrow(input);
+  addUserMsg(text);
+  chat.history.push({ role: 'user', text });
+
+  // lock + typing indicator
+  chat.busy = true;
+  sendBtn.disabled = true;
+  AudioEngine.sfxAdvance && AudioEngine.sfxAdvance();
+  showChatTyping(chat.mode === 'single' ? chat.charIds[0] : null);
+
+  // 当前正在流式填充的气泡
+  let curBubble = null, curId = null, curText = '', gotAny = false;
+
+  const finalizeCurrent = () => {
+    if (curBubble) {
+      const ch = chatChar(chat.worldId, curId) || {};
+      chat.history.push({ role: 'assistant', name: ch.name || '', text: curText });
+      AudioEngine.sfxAdvance && AudioEngine.sfxAdvance();
+    }
+    curBubble = null; curText = ''; curId = null;
+  };
+
+  const handleEvent = (event, data) => {
+    if (event === 'start') {
+      hideChatTyping();
+      finalizeCurrent();
+      curId = data.charId;
+      curText = '';
+      curBubble = beginCharBubble(curId);
+      gotAny = true;
+    } else if (event === 'delta') {
+      if (!curBubble) { hideChatTyping(); curBubble = beginCharBubble(curId || chat.charIds[0]); gotAny = true; }
+      curText += (data.text || '');
+      curBubble.textContent = curText;
+      scrollChatBottom();
+    } else if (event === 'end') {
+      finalizeCurrent();
+      if (chat.mode !== 'single') showChatTyping(null);   // 群聊：下一位"正在输入"
+    } else if (event === 'done') {
+      finalizeCurrent();
+      hideChatTyping();
+    } else if (event === 'error') {
+      hideChatTyping();
+      finalizeCurrent();
+      addChatError('他们一时没接上话……再试一次？');
+    }
+  };
+
+  try {
+    const resp = await fetch(CHAT_API.replace(/\/$/, '') + '/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        worldId: chat.worldId,
+        charIds: chat.charIds,
+        mode: chat.mode,
+        history: chat.history.slice(0, -1),   // 不含刚发的这条（作为 message 单独传）
+        message: text,
+      }),
+    });
+
+    if (!resp.ok || !resp.body) {
+      hideChatTyping();
+      addChatError('他们好像一时没接上话……（' + resp.status + '）再试一次？');
+      return;
+    }
+
+    // 读取 SSE 流
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+
+      let idx;
+      while ((idx = buf.indexOf('\n\n')) >= 0) {
+        const rawEvt = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+
+        let ev = 'message', dataStr = '';
+        for (const line of rawEvt.split('\n')) {
+          if (line.startsWith('event:')) ev = line.slice(6).trim();
+          else if (line.startsWith('data:')) dataStr += line.slice(5).trim();
+        }
+        let data = {};
+        if (dataStr) { try { data = JSON.parse(dataStr); } catch {} }
+        handleEvent(ev, data);
+      }
+    }
+
+    hideChatTyping();
+    finalizeCurrent();
+    if (!gotAny) addChatError('……（沉默了一下）再说点什么吧？');
+  } catch (err) {
+    hideChatTyping();
+    finalizeCurrent();
+    addChatError('连接中断了……检查下网络，再试一次？');
+  } finally {
+    chat.busy = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
 }
 </script>
 </body>

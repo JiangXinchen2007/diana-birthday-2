@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Cloudflare Wrangler 本地缓存/状态
+workers/.wrangler/
+
+# 本地开发配置
+.claude/

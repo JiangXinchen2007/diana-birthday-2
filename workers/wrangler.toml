@@ -1,0 +1,21 @@
+name = "diana-chat"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# ── 可选变量 ──
+[vars]
+# MODEL：用哪个模型。默认 moonshot-v1-32k。
+#   想要更强的角色扮演，换成 K2（如果你的账号开通了）：
+#   MODEL = "kimi-k2-0905-preview"
+#   也可以用： moonshot-v1-8k（更便宜）/ moonshot-v1-128k（超长上下文）
+# MODEL = "moonshot-v1-32k"
+
+# BASE_URL：默认 Kimi。以后想换 DeepSeek 等 OpenAI 兼容厂商就改这里：
+#   DeepSeek →  BASE_URL = "https://api.deepseek.com"   且  MODEL = "deepseek-chat"
+# BASE_URL = "https://api.moonshot.cn/v1"
+
+# ALLOW_ORIGIN：部署网页后填你的网址，限定只有它能调用（更安全）。不填默认 "*"
+# ALLOW_ORIGIN = "*"
+
+# ⚠️ API key 不要写在这里！用命令行设置成加密 secret：
+#   npx wrangler secret put LLM_API_KEY

@@ -608,9 +608,11 @@ html, body {
   gap: 5px;
   justify-content: center;   /* JS overrides to flex-start if overflow */
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 0 16px;
+  /* vertical padding so the active chip's lift + glow isn't clipped by overflow */
+  padding: 16px 16px;
 }
 #char-row.many-chars::-webkit-scrollbar { display: none; }
 #char-row.many-chars .chip-circle {
@@ -682,8 +684,11 @@ html, body {
   flex-shrink: 0;
   height: 62vh;          /* default: desktop & landscape */
   display: flex;
+  flex-wrap: wrap;                 /* allow multi-row when one row can't fit */
   align-items: flex-end;
+  align-content: flex-end;         /* stack wrapped rows toward the bottom */
   justify-content: center;
+  gap: 0 6px;
   overflow: hidden;
   padding: 0 6px;
 }
@@ -2110,6 +2115,10 @@ function exitWorld() {
 
   const portrait = document.getElementById('char-portrait');
   portrait.classList.remove('show');
+  // Drop the bitmap so the next world can never flash this world's character
+  portrait.removeAttribute('src');
+  portrait.dataset.char = '';
+  portraitTargetId = null;
 
   const stage = document.getElementById('st-' + activeWorld);
   stage.classList.remove('active');
@@ -2188,16 +2197,27 @@ function updatePortrait(charId) {
 
     portraitTargetId = char.id;
 
-    // Instantly hide (bypass transition), swap src, then fade in
+    // Instantly hide (bypass transition), swap src, then fade in ONLY after the
+    // new image has actually decoded — otherwise the browser keeps painting the
+    // previous world's portrait (e.g. Reze) during the fade. (state-leak fix)
     portrait.style.transition = 'none';
     portrait.classList.remove('show');
     portrait.dataset.char = char.id;
     portrait.src = char.img;
     void portrait.offsetHeight;     // force reflow so opacity:0 commits before re-enabling transition
     portrait.style.transition = ''; // restore CSS transition
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+
+    const reveal = () => {
       if (portraitTargetId === char.id) portrait.classList.add('show');
-    }));
+    };
+    if (portrait.complete && portrait.naturalWidth > 0) {
+      requestAnimationFrame(() => requestAnimationFrame(reveal));
+    } else if (portrait.decode) {
+      portrait.decode().then(reveal).catch(() =>
+        requestAnimationFrame(() => requestAnimationFrame(reveal)));
+    } else {
+      portrait.onload = reveal;
+    }
   } else {
     if (portraitTimer) { clearTimeout(portraitTimer); portraitTimer = null; }
     portraitTargetId = null;
@@ -2423,57 +2443,48 @@ function showLetter() {
 // ══════════════════════════════════════
 // Scale portrait HEIGHT down uniformly so all images fit without squeezing.
 // If they'd become too small to read, keep a minimum size and let the row scroll.
+// Lay all characters out so they fill the available area. When a single row
+// would make them too small (many-character worlds on a narrow phone), wrap
+// into 2–3 rows that spread evenly across the screen instead of a cramped,
+// half-cut horizontal scroll.
 function fitPortraits(container, imgEls) {
   if (!imgEls.length) return;
-  const avail = container.getBoundingClientRect().width * 0.97;
-  if (!avail) return;
+  const availW = container.clientWidth * 0.96;
+  const availH = container.clientHeight || (window.innerHeight * 0.6);
+  if (!availW || !availH) return;
 
-  const regulars = imgEls.filter(el => el.dataset.char !== 'pochita');
-  const pochita  = imgEls.find(el => el.dataset.char === 'pochita');
-  if (!regulars.length) return;
+  // aspect ratio (w/h) per image; pochita is a tiny pet → treat as half-height
+  const arOf = el => el.dataset.char === 'pochita'
+    ? (el.naturalWidth > 0 ? el.naturalWidth / el.naturalHeight : 0.7) * 0.5
+    : (el.naturalWidth > 0 ? el.naturalWidth / el.naturalHeight : 0.5);
+  const arSum = imgEls.reduce((s, el) => s + arOf(el), 0);
 
-  const cssH = regulars[0].getBoundingClientRect().height || 300;
+  // Single-row height if everyone sits in one line filling the width.
+  // If that's cramped (< ~110px) add rows until images are comfortably sized
+  // or we run out of vertical room.
+  let rows = 1;
+  let h = availW / arSum;
+  const rowGap = 6;
+  while (h < 110 && rows < 3) {
+    const next = rows + 1;
+    const nextH = (availW * next) / arSum;           // taller: each row holds ~1/next of total
+    if (nextH * next + (next - 1) * rowGap > availH) break;  // wouldn't fit vertically
+    rows = next; h = nextH;
+  }
+  // Clamp so the stacked rows always fit the strip height.
+  const maxH = (availH - (rows - 1) * rowGap) / rows;
+  if (h > maxH) h = maxH;
+  h = Math.floor(h);
 
-  // Sum of natural aspect ratios (w/h) for all chars
-  let aspectSum = 0;
-  regulars.forEach(img => {
-    aspectSum += img.naturalWidth > 0
-      ? img.naturalWidth / img.naturalHeight
-      : 0.45;
+  imgEls.forEach(el => {
+    const hh = el.dataset.char === 'pochita' ? Math.floor(h * 0.5) : h;
+    el.style.setProperty('height', hh + 'px', 'important');
   });
-  if (pochita) {
-    const pCssH = pochita.getBoundingClientRect().height || cssH * 0.22;
-    const pAR   = pochita.naturalWidth > 0
-      ? pochita.naturalWidth / pochita.naturalHeight : 1.0;
-    aspectSum  += pAR * (pCssH / cssH);
-  }
-
-  // Ideal height: everyone fits in avail width at natural aspect ratio
-  const optimal = Math.floor(avail / aspectSum);
-  if (optimal >= cssH) return;   // already fits fine
-
-  // Floor: never go below 25 % of original CSS height so faces stay visible
-  const minH   = Math.max(Math.floor(cssH * 0.25), 80);
-  const newH   = Math.max(optimal, minH);
-  const scale  = newH / cssH;
-
-  regulars.forEach(img => { img.style.height = newH + 'px'; });
-  if (pochita) {
-    const pCssH = pochita.getBoundingClientRect().height || cssH * 0.22;
-    pochita.style.height = Math.floor(pCssH * scale) + 'px';
-  }
-
-  // Collapse the portrait strip so it snugly wraps the actual character height
-  // (prevents a tall empty gap inside the strip when chars are scaled way down)
-  container.style.height = Math.ceil(newH * 1.08) + 'px';
-
-  // If minH floor was hit the row still overflows — enable smooth scrolling
-  if (newH > optimal) {
-    container.style.overflowX            = 'auto';
-    container.style.justifyContent       = 'flex-start';
-    container.style.webkitOverflowScrolling = 'touch';
-    container.style.scrollbarWidth       = 'none';
-  }
+  container.style.rowGap = rowGap + 'px';
+  // Let the flex container keep its CSS height; align-content:flex-end packs
+  // the (possibly multiple) rows toward the bottom.
+  container.style.overflowX = '';
+  container.style.justifyContent = 'center';
 }
 
 function showGroupFinale(worldId, callback) {

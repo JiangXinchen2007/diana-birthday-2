@@ -579,7 +579,8 @@ html, body {
    RESPONSIVE
    ══════════════════════════════════════ */
 @media(max-width:720px) {
-  .grid { gap:10px; }
+  .grid { flex-direction:row; flex-wrap:wrap; justify-content:center; gap:10px; }
+  .grid-row { display:contents; }   /* 解散固定分行，7 张卡自由换行成每行 2 张 */
   .card { flex: 0 0 calc(50% - 5px); padding:18px 14px 14px; }
   .p-title { letter-spacing:5px; }
   .p-sub { margin-bottom:30px; }
@@ -1399,6 +1400,13 @@ html, body {
 /* 极窄屏：世界卡两列 */
 @media (max-width: 380px) {
   .cl-worlds { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 信件 — 手机端收窄留白，给正文更多空间 */
+@media (max-width: 560px) {
+  #letter-paper { width: 92%; padding: 42px 26px 36px; }
+  #letter-paper::before { left: 26px; right: 26px; }
+  .letter-date { letter-spacing: 4px; margin-bottom: 30px; }
 }
 
 </style>

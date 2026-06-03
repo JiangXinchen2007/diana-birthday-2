@@ -682,7 +682,7 @@ html, body {
 /* Portrait strip — explicit vh height so it stays proportional on every device */
 #gf-portraits {
   flex-shrink: 0;
-  height: 66vh;          /* default: desktop & landscape */
+  height: 74vh;          /* default; per-breakpoint overrides below */
   display: flex;
   flex-direction: column;          /* stack the tiered rows */
   justify-content: flex-end;
@@ -690,15 +690,19 @@ html, body {
   overflow: hidden;
   padding: 0 2px;
 }
-/* One tier of the group photo. JS sizes the images and overlaps them. */
+/* Gallery mode (square/rectangular stills): centre the cards vertically. */
+#gf-portraits[data-mode="grid"] { justify-content: center; padding: 0 12px; }
+
+/* One tier. JS sizes the images and overlaps (stand) or gaps (grid) them. */
 .gf-row {
   display: flex;
   align-items: flex-end;
   justify-content: center;
   width: 100%;
 }
+#gf-portraits[data-mode="grid"] .gf-row { align-items: center; }
 
-/* JS sets each image's explicit height + horizontal overlap (margin-left). */
+/* JS sets each image's explicit height + horizontal margin. */
 .gf-char {
   width: auto;
   flex-shrink: 0;            /* never squeeze horizontally */
@@ -712,8 +716,15 @@ html, body {
 }
 .gf-char.show { opacity: 1; transform: translateY(0); }
 
-/* Pochita — tiny pet, ~22% of strip height */
-.gf-char[data-char="pochita"] { height: 22% !important; }
+/* Gallery cards: full rectangular still, rounded, framed — no bottom fade. */
+#gf-portraits[data-mode="grid"] .gf-char {
+  -webkit-mask-image: none; mask-image: none;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 28px rgba(0,0,0,.55);
+  filter: none;
+  object-fit: cover;
+}
 
 #gf-bottom {
   flex-shrink: 0;
@@ -739,21 +750,18 @@ html, body {
 }
 #gf-hint.show { opacity: 1; animation: hintPulse 1.4s infinite; }
 
-/* ── Per-breakpoint strip heights ── */
-/* Mobile portrait (iPhone, tall): fill most of the screen */
+/* ── Per-breakpoint strip heights (how much vertical space the cast fills) ── */
+/* Mobile portrait (iPhone, tall) */
 @media (max-width: 480px) {
-  #gf-portraits                       { height: 74vh; }
-  #gf-portraits[data-cast="large"]    { height: 74vh; }
+  #gf-portraits { height: 76vh; }
 }
 /* Tablet portrait (iPad 768×1024 etc.) */
 @media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) {
-  #gf-portraits                       { height: 66vh; }
-  #gf-portraits[data-cast="large"]    { height: 66vh; }
+  #gf-portraits { height: 72vh; }
 }
-/* Large desktop (1400px+): cap so characters don't get absurdly tall */
-@media (min-width: 1400px) {
-  #gf-portraits                       { height: 60vh; }
-  #gf-portraits[data-cast="large"]    { height: 58vh; }
+/* Desktop / landscape: fill more of the height so the cast isn't tiny */
+@media (min-width: 1025px) {
+  #gf-portraits { height: 78vh; }
 }
 
 /* ══════════════════════════════════════
@@ -2211,22 +2219,16 @@ function updatePortrait(charId, instant) {
 
     const reveal = () => {
       if (portraitTargetId !== char.id) return;
-      if (instant) {
-        // First character of a world: appear with no fade, immediately.
-        portrait.style.transition = 'none';
-        portrait.classList.add('show');
-        void portrait.offsetHeight;
-        portrait.style.transition = '';
-      } else {
-        portrait.style.transition = '';
-        portrait.classList.add('show');
-      }
+      // First character of a world: a quick, gentle fade (not an abrupt pop,
+      // not the old long delay). Later swaps use the standard transition.
+      portrait.style.transition = instant ? 'opacity .55s ease' : '';
+      portrait.classList.add('show');
     };
     if (portrait.complete && portrait.naturalWidth > 0) {
-      instant ? reveal() : requestAnimationFrame(() => requestAnimationFrame(reveal));
+      requestAnimationFrame(() => requestAnimationFrame(reveal));
     } else if (portrait.decode) {
       portrait.decode().then(reveal).catch(() =>
-        instant ? reveal() : requestAnimationFrame(() => requestAnimationFrame(reveal)));
+        requestAnimationFrame(() => requestAnimationFrame(reveal)));
     } else {
       portrait.onload = reveal;
     }
@@ -2456,61 +2458,79 @@ function showLetter() {
 // Size the tiered rows into an overlapping "group photo": characters are made
 // as large as possible, huddled together with a horizontal overlap, and the
 // rows tier slightly so everyone fills the screen yet stays fully visible.
-function fitPortraits(container, imgEls) {
+// Arrange the whole cast to fill the screen and stay fully visible on ANY
+// viewport. Two looks, chosen automatically from the art's aspect ratio:
+//   • tall transparent cutouts  → overlapping "group photo" (huddled, tiered)
+//   • square / rectangular stills → clean gallery grid (gaps, rounded cards)
+// Row count is picked to maximise size: wide desktop → fewer, taller rows;
+// narrow phone → more rows. Everyone always fits.
+function layoutFinale(container, imgEls) {
   if (!imgEls.length) return;
   const availW = container.clientWidth;
   const availH = container.clientHeight;
   if (!availW || !availH) return;
 
-  const rows = Array.from(container.querySelectorAll('.gf-row'));
-  if (!rows.length) return;
+  const arRaw = imgEls.map(el => el.naturalWidth > 0 ? el.naturalWidth / el.naturalHeight : 0.55);
+  const sorted = [...arRaw].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  const mode = median < 0.68 ? 'stand' : 'grid';
+  container.dataset.mode = mode;
 
-  const arOf = el => el.dataset.char === 'pochita'
-    ? (el.naturalWidth > 0 ? el.naturalWidth / el.naturalHeight : 0.7)
-    : (el.naturalWidth > 0 ? el.naturalWidth / el.naturalHeight : 0.5);
+  // effective per-image aspect (pochita is a tiny pet → counts as half-width)
+  const ar = imgEls.map((el, i) => el.dataset.char === 'pochita' ? arRaw[i] * 0.5 : arRaw[i]);
+  const n = imgEls.length;
 
-  const vOverlap   = 0.08;                          // rows tier into each other
-  const minOverlap = rows.length > 1 ? 0.20 : 0.12; // aesthetic minimum huddle
-  const maxOverlap = 0.46;                          // never hide faces past this
-  const vStack     = rows.length - (rows.length - 1) * vOverlap;
+  const hGapPx   = mode === 'grid' ? 12 : 0;     // horizontal gap (grid)
+  const vGapPx   = mode === 'grid' ? 12 : 0;     // vertical gap (grid)
+  const overlap  = mode === 'grid' ? 0 : 0.24;   // horizontal huddle (stand)
+  const vOverlap = mode === 'grid' ? 0 : 0.08;   // rows tier into each other (stand)
 
-  const rowInfo = rows.map(row => {
-    const imgs = Array.from(row.querySelectorAll('.gf-char'));
-    const ars  = imgs.map(arOf);
-    return { imgs, ars, sum: ars.reduce((a, b) => a + b, 0), first: ars[0] || 0 };
-  });
-
-  // Aim to fill the available height, then huddle horizontally as much as
-  // needed (up to a cap) so the widest row still fits the width.
-  let H = (availH * 0.99) / vStack;
-  let needed = minOverlap;
-  rowInfo.forEach(({ sum, first }) => {
-    const denom = H * (sum - first);
-    if (denom > 0) needed = Math.max(needed, (H * sum - availW * 0.99) / denom);
-  });
-  let overlap = needed;
-  if (overlap > maxOverlap) {
-    // Too crowded even fully huddled → cap overlap and shrink to fit width.
-    overlap = maxOverlap;
-    let maxEff = 0;
-    rowInfo.forEach(({ sum, first }) => { maxEff = Math.max(maxEff, sum - overlap * (sum - first)); });
-    H = (availW * 0.99) / (maxEff || 1);
+  // Pick the row count that yields the largest character height.
+  let best = null;
+  for (let rows = 1; rows <= Math.min(4, n); rows++) {
+    const per = Math.ceil(n / rows);
+    let maxEff = 0, maxCount = 0;
+    for (let r = 0; r < rows; r++) {
+      const slice = ar.slice(r * per, r * per + per);
+      if (!slice.length) continue;
+      const sum = slice.reduce((a, b) => a + b, 0);
+      const eff = mode === 'grid' ? sum : sum - overlap * (sum - slice[0]);
+      maxEff = Math.max(maxEff, eff);
+      maxCount = Math.max(maxCount, slice.length);
+    }
+    const Hw = (availW * 0.98 - (maxCount - 1) * hGapPx) / (maxEff || 1);
+    const Hh = mode === 'grid'
+      ? (availH - (rows - 1) * vGapPx) / rows
+      : (availH * 0.99) / (rows - (rows - 1) * vOverlap);
+    const H = Math.min(Hw, Hh);
+    if (!best || H > best.H) best = { rows, per, H };
   }
-  overlap = Math.max(minOverlap, Math.min(overlap, maxOverlap));
-  H = Math.floor(H);
+  const { rows, per } = best;
+  const H = Math.floor(best.H);
 
-  rowInfo.forEach(({ imgs, ars }) => {
-    imgs.forEach((img, i) => {
-      const isPochita = img.dataset.char === 'pochita';
-      img.style.setProperty('height', (isPochita ? Math.floor(H * 0.52) : H) + 'px', 'important');
-      img.style.marginLeft = i === 0 ? '0' : (-(overlap * ars[i] * H)) + 'px';
-      img.style.zIndex = String(i + 1);     // each next character layers in front
+  // (Re)build the row wrappers and place the images.
+  container.querySelectorAll('.gf-row').forEach(r => r.remove());
+  for (let r = 0; r < rows; r++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'gf-row';
+    imgEls.slice(r * per, r * per + per).forEach((img, i) => {
+      const gi = r * per + i;
+      const isP = img.dataset.char === 'pochita';
+      img.style.setProperty('height', (isP ? Math.floor(H * 0.5) : H) + 'px', 'important');
+      if (mode === 'grid') {
+        img.style.marginLeft = i === 0 ? '0' : hGapPx + 'px';
+        img.style.zIndex = '';
+      } else {
+        img.style.marginLeft = i === 0 ? '0' : (-(overlap * ar[gi] * H)) + 'px';
+        img.style.zIndex = String(i + 1);
+      }
+      rowDiv.appendChild(img);
     });
-  });
-  rows.forEach((row, r) => {
-    row.style.marginTop = r === 0 ? '0' : (-(vOverlap * H)) + 'px';
-    row.style.zIndex = String(r + 1);       // front (lower) row on top
-  });
+    rowDiv.style.marginTop = r === 0 ? '0'
+      : (mode === 'grid' ? vGapPx + 'px' : (-(vOverlap * H)) + 'px');
+    rowDiv.style.zIndex = String(r + 1);
+    container.appendChild(rowDiv);
+  }
 }
 
 function showGroupFinale(worldId, callback) {
@@ -2534,27 +2554,19 @@ function showGroupFinale(worldId, callback) {
   textEl.classList.remove('show');
   hintEl.classList.remove('show');
   hintEl.style.opacity = '0';
-  portraits.dataset.cast = charsWithImg.length > 7 ? 'large' : 'normal';
+  portraits.removeAttribute('data-mode');
 
-  // Build the group photo as 1 or 2 tiered rows (back row holds the extra).
-  // pochita (tiny pet) is pulled out and tucked beside the front row.
-  const nRows = charsWithImg.length <= 6 ? 1 : 2;
-  const perRow = Math.ceil(charsWithImg.length / nRows);
-  let idx = 0;
-  for (let r = 0; r < nRows; r++) {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'gf-row';
-    charsWithImg.slice(idx, idx + perRow).forEach(ch => {
-      const img = document.createElement('img');
-      img.className = 'gf-char';
-      img.dataset.char = ch.id;
-      img.src = ch.img;
-      img.alt = ch.name;
-      rowDiv.appendChild(img);
-    });
-    idx += perRow;
-    portraits.appendChild(rowDiv);
-  }
+  // Build the cast flat; layoutFinale() arranges them into adaptive rows once
+  // their natural dimensions are known (overlap group-photo for tall cutouts,
+  // gallery grid for square/rectangular stills).
+  charsWithImg.forEach(ch => {
+    const img = document.createElement('img');
+    img.className = 'gf-char';
+    img.dataset.char = ch.id;
+    img.src = ch.img;
+    img.alt = ch.name;
+    portraits.appendChild(img);
+  });
 
   overlay.classList.add('on');
 
@@ -2569,7 +2581,7 @@ function showGroupFinale(worldId, callback) {
 
     // One rAF so the strip has its CSS height before we measure
     requestAnimationFrame(() => {
-      fitPortraits(portraits, imgEls);
+      layoutFinale(portraits, imgEls);
 
       imgEls.forEach((img, i) => {
         setTimeout(() => img.classList.add('show'), 80 + i * 50);

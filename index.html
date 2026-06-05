@@ -2692,6 +2692,8 @@ const AudioEngine = (() => {
   // Schedule a single note: freq, startOffset(s), duration(s), oscType, peakGain, destination
   function nt(f, s, d, t, gv, dest) {
     if (!ctx) return;
+    const bus = dest || worldOut;
+    if (!bus) return;                 // no active world bus → don't schedule
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
@@ -2702,7 +2704,7 @@ const AudioEngine = (() => {
     g.gain.linearRampToValueAtTime(gv, now + s + atk);
     g.gain.setValueAtTime(gv, now + s + d - rel);
     g.gain.linearRampToValueAtTime(0, now + s + d);
-    osc.connect(g); g.connect(dest || worldOut);
+    osc.connect(g); g.connect(bus);
     osc.start(now + s); osc.stop(now + s + d + 0.02);
   }
 
@@ -2933,13 +2935,32 @@ const AudioEngine = (() => {
     nana: loop_nana, jiang: loop_jiang,
   };
 
+  // Fade the current world's bus out, then DISCONNECT it so any notes already
+  // queued on the audio timeline are permanently silenced (they can't resurrect
+  // when the next world fades its own bus back in). This is the key to keeping
+  // worlds from bleeding into each other.
+  function killWorldBus(fadeS) {
+    if (!ctx || !worldOut) return;
+    const dying = worldOut;
+    worldOut = null;
+    const t = ctx.currentTime;
+    try {
+      dying.gain.cancelScheduledValues(t);
+      dying.gain.setValueAtTime(dying.gain.value, t);
+      dying.gain.linearRampToValueAtTime(0, t + fadeS);
+    } catch (e) {}
+    setTimeout(() => { try { dying.disconnect(); } catch (e) {} }, fadeS * 1000 + 150);
+  }
+
   function enterWorld(id) {
-    if (!ctx) return;
-    currentWorld = id;
+    init(); if (!ctx) return;
     clearTimeout(loopTimer);
-    worldOut.gain.cancelScheduledValues(ctx.currentTime);
+    killWorldBus(0.5);                       // tear down any previous world first
+    worldOut = ctx.createGain();             // fresh, isolated bus for this world
+    worldOut.connect(masterOut);
     worldOut.gain.setValueAtTime(0, ctx.currentTime);
     worldOut.gain.linearRampToValueAtTime(0.72, ctx.currentTime + 1.8);
+    currentWorld = id;
     // Start first loop after a short delay so fade-in is audible
     loopTimer = setTimeout(() => { if (loops[id] && currentWorld === id) loops[id](); }, 150);
   }
@@ -2948,9 +2969,7 @@ const AudioEngine = (() => {
     if (!ctx) return;
     clearTimeout(loopTimer);
     currentWorld = null;
-    worldOut.gain.cancelScheduledValues(ctx.currentTime);
-    worldOut.gain.setValueAtTime(worldOut.gain.value, ctx.currentTime);
-    worldOut.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.1);
+    killWorldBus(1.0);                       // fade out AND disconnect on the way out
   }
 
   // ── SFX ──

@@ -1156,7 +1156,7 @@ html, body {
   display: none; flex-direction: column; align-items: center;
   justify-content: safe center;
   padding: 56px 24px 40px; overflow-y: auto;
-  background: radial-gradient(ellipse at 50% 0%, #0d0a07 0%, #060504 75%);
+  background: radial-gradient(ellipse at 50% 42%, #0d0a07 0%, #060504 72%);
   opacity: 0; transition: opacity .5s ease;
 }
 #chat-lobby.on  { display: flex; }
@@ -1420,10 +1420,11 @@ html, body {
 
 /* 桌面大屏：再放大一档，居中不空旷 */
 @media (min-width: 1100px) {
-  .cl-worlds { max-width: 1000px; gap: 20px;
+  .cl-worlds { max-width: 1060px; gap: 22px;
     grid-template-columns: repeat(4, 1fr); }
-  .cl-world { padding: 30px 22px; }
-  .cl-world-kanji { font-size: 60px; }
+  .cl-world { padding: 40px 24px; min-height: 150px; display: flex;
+    flex-direction: column; justify-content: flex-end; }
+  .cl-world-kanji { font-size: 66px; }
   #cl-charpick { max-width: 1000px; }
   .cl-char { width: 104px; }
   .cl-char-av { width: 84px; height: 84px; }
